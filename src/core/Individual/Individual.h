@@ -12,11 +12,17 @@ class Individual{
         Patch* patch;
         double* haplotype0;
         double* haplotype1;
-        bool has_migrated;
+        double w;
     public:
-        Individual(Patch* patch);
+        bool has_migrated;
+        double parent_was_migrant;
+
+        Individual(Patch* patch, bool parent_was_migrant);
+        ~Individual();
         Patch* get_patch();
         int get_id();
+        int get_sex();
+        double get_fitness();
         void set_locus(int locus, int haplotype, double val);
         double get_locus(int locus, int haplotype);
 
@@ -26,6 +32,9 @@ class Individual{
         Patch* pick_best_patch(std::vector<Patch*> options);
 
         double calc_pref(Patch* patch);
+        void calc_fitness();
+        void gen_haplotype(Individual* parent, int offspring_haplo);
+        std::vector<int> get_crossing_over_points();
 
 };
 

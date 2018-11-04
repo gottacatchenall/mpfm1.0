@@ -1,4 +1,4 @@
-
+#include "include.h"
 #include "Patch.h"
 #include "Individual.h"
 #include "EnvFactor.h"
@@ -10,6 +10,9 @@ Patch::Patch(double x, double y, double K){
     this->y = y;
     this->K = K;
     this->id = id_counter++;
+
+    this->individuals = new std::unordered_map<int, Individual*>;
+    this->next_gen = new std::unordered_map<int, Individual*>;
 }
 
 double Patch::get_x(){
@@ -25,15 +28,15 @@ double Patch::get_K(){
 }
 
 void Patch::add_individual(Individual* indiv){
-    this->individuals.insert(std::make_pair(indiv->get_id(), indiv));
+    this->individuals->insert(std::make_pair(indiv->get_id(), indiv));
 }
 
 void Patch::remove_individual(Individual* indiv){
-    this->individuals.erase(indiv->get_id());
+    this->individuals->erase(indiv->get_id());
 }
 
 int Patch::get_size(){
-    return this->individuals.size();
+    return this->individuals->size();
 }
 
 int Patch::get_id(){
@@ -42,7 +45,16 @@ int Patch::get_id(){
 
 std::vector<Individual*> Patch::get_all_individuals(){
    std::vector<Individual*> indiv;
-   for (auto ind: this->individuals){
+
+   for (auto ind: *(this->individuals)){
+        /*#if __DEBUG__
+           int n_loci = params["NUM_OF_LOCI"];
+           for (int i = 0; i < n_loci; i++){
+               double al0 = ind.second->get_locus(i, 0);
+               double al1 = ind.second->get_locus(i, 1);
+               assert(al0 >= 0.0 && al0 <= 1.0 && al1 >= 0.0 && al1 <= 1.0);
+           }
+       #endif*/
        indiv.push_back(ind.second);
    }
 
@@ -60,4 +72,75 @@ std::vector<double> Patch::get_env_factors(){
     }
 
     return ef_vector;
+}
+
+void Patch::selection(){
+    std::vector<Individual*> indivs = this->get_all_individuals();
+    double w;
+    bool surv;
+
+    double max_fitness = 0.0;
+    for (Individual* indiv : indivs){
+        w = indiv->get_fitness();
+        if (w > max_fitness){
+            max_fitness = w;
+        }
+    }
+
+
+    int K = this->K;
+    int n = indivs.size();
+
+    for (Individual* indiv : indivs){
+        double fitness = double(indiv->get_fitness())/double(max_fitness);
+        double k_prime = double(K * fitness);
+
+
+        double prob = this->beverton_holt_prob(n, k_prime);
+        surv = false;
+        if (real_uniform(0,1, main_generator) < prob){
+            surv =  true;
+        }
+
+        if (!surv){
+            remove_individual(indiv);
+            delete indiv;
+        }
+    }
+}
+
+double Patch::beverton_holt_prob(int n, double k_prime){
+    int b = params["AVG_NUM_OFFSPRING_PER_FEMALE"];
+
+    double prop_full = double(n)/double(k_prime);
+    double prob = double(1.0) / double(1 + (double(b)/double(2) - 1)*(prop_full));
+    return prob;
+}
+
+std::vector<std::vector<Individual*>> Patch::split_by_sex(){
+    std::vector<Individual*> males;
+    std::vector<Individual*> females;
+
+    for (Individual* indiv: this->get_all_individuals()){
+        if (indiv->get_sex()== 1){
+           males.push_back(indiv);
+        }
+        else if (indiv->get_sex() == 0){
+           females.push_back(indiv);
+        }
+    }
+    std::vector<std::vector<Individual*>> res;
+    res.push_back(females);
+    res.push_back(males);
+    return res;
+}
+
+void Patch::add_to_next_gen(Individual* indiv){
+    this->next_gen->insert(std::make_pair(indiv->get_id(), indiv));
+}
+
+void Patch::replace_current_gen(){
+    delete this->individuals;
+    this->individuals = this->next_gen;
+    this->next_gen = new std::unordered_map<int, Individual*>;
 }

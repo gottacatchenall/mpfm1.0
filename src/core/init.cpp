@@ -3,6 +3,8 @@
 #include "EnvFactor.h"
 #include "GenomeDict.h"
 #include "Individual.h"
+#include "AlleleTracker.h"
+#include "MigrationTracker.h"
 
 void init(){
     read_params_file();
@@ -57,7 +59,11 @@ void initialize_patches(){
     patches = new std::vector<Patch*>;
 
     for (int i = 0; i < n_patches; i++){
-        Patch *tmp = new Patch(x_dis(*patch_generator), y_dis(*patch_generator), k_dis(*patch_generator));
+        double k = k_dis(*patch_generator);
+        if (k < 0){
+            k = 0;
+        }
+        Patch *tmp = new Patch(x_dis(*patch_generator), y_dis(*patch_generator), k);
         patches->push_back(tmp);
     }
 }
@@ -81,6 +87,7 @@ void init_dist_matrix(){
 }
 
 void initialize_genome_dict(){
+    migration_tracker = new MigrationTracker();
     genome_dict = new GenomeDict();
 }
 
@@ -95,7 +102,7 @@ void initialize_individuals(){
         n_indiv = n_indiv_dis(*patch_generator);
 
         for (i = 0; i < n_indiv; i++){
-            indiv_i = new Individual(patch_i);
+            indiv_i = new Individual(patch_i, false);
             patch_i->add_individual(indiv_i);
         }
     }
@@ -103,97 +110,120 @@ void initialize_individuals(){
 
 
 void initialize_genomes(){
-    std::vector<std::vector<double>> alleles = gen_init_alleles();
-    std::vector<std::vector<double>> freqs = gen_init_allele_freqs(alleles);
     int n_loci = params["NUM_OF_LOCI"];
 
+    std::vector<std::vector<double>> alleles = gen_alleles();
+    std::vector<std::vector<double>> props = generate_allele_freq_from_beta(alleles);
+
     for (Patch* patch_i : *patches){
-        for (Individual* indiv_i : patch_i->get_all_individuals()){
-            for (int locus = 0; locus < n_loci; locus++){
-                double al1 = get_allele_from_dist(alleles, freqs, locus);
-                double al2 = get_allele_from_dist(alleles, freqs, locus);
-                indiv_i->set_locus(locus, 0, al1);
-                indiv_i->set_locus(locus, 1, al2);
+        int patch_size = patch_i->get_size();
+        std::vector<std::vector<int>> num_per_allele = get_num_with_each_allele(props, patch_size);
+
+        for (int locus = 0; locus < n_loci; locus++){
+            std::vector<double> allele_map;
+            int n_alleles = num_per_allele[locus].size();
+            for (int i = 0; i < n_alleles; i++){
+                int n = num_per_allele[locus][i];
+                for (int j = 0; j < n; j++){
+                    allele_map.push_back(alleles[locus][i]);
+                }
+            }
+
+            random_shuffle(std::begin(allele_map), std::end(allele_map));
+
+            int allele_ct = 0;
+            for (Individual* indiv: patch_i->get_all_individuals()){
+                indiv->set_locus(locus, 0, allele_map[allele_ct]);
+                allele_ct++;
+                indiv->set_locus(locus, 1, allele_map[allele_ct]);
+                allele_ct++;
             }
         }
     }
 
-}
-
-double get_allele_from_dist(std::vector<std::vector<double>>  alleles, std::vector<std::vector<double>> freqs, int locus){
-    double draw, sum;
-    double allele_val = -1.0;
-    int n_alleles;
-
-    std::uniform_real_distribution<double> dis(0.0,1.0);
-
-    n_alleles = freqs[locus].size();
-    sum = 0.0;
-    draw = dis(*patch_generator);
-
-    for (int allele_i = 0; allele_i < n_alleles; allele_i++){
-        sum += freqs[locus][allele_i];
-        if (sum > draw){
-            allele_val = alleles[locus][allele_i];
-            break;
+    #if __DEBUG__
+        for (Patch* patch_i : *patches){
+            for (Individual* indiv_i : patch_i->get_all_individuals()){
+                for (int locus = 0; locus < n_loci; locus++){
+                    double al1 = indiv_i->get_locus(locus, 0);
+                    double al2 = indiv_i->get_locus(locus, 1);
+                    if (al1 < 0.0 || al1 > 1.0){
+                        assert(0 && "why has god abandoned us\n");
+                    }
+                    if (al2 < 0.0 || al2 > 1.0){
+                        assert(0 && "god dammit all to hell\n");
+                    }
+                }
+            }
         }
-    }
-    return allele_val;
+    #endif
 }
 
-std::vector<std::vector<double>> gen_init_alleles(){
-    int n_loci = params["NUM_OF_LOCI"];
-
-    std::uniform_real_distribution<double> allele_dis(0.0, 1.0);
-    int n_indiv = get_total_population_size();
-
-    std::vector<std::vector<double>> alleles;
-    int n_alleles, allele_i;
-    double allele;
-
-    for (int locus = 0; locus < n_loci; locus++){
-        n_alleles = expected_num_alleles(n_indiv);
-        alleles.push_back(std::vector<double>());
-        for (allele_i = 0; allele_i < n_alleles; allele_i++){
-            allele = allele_dis(*genome_generator);
-            alleles[locus].push_back(allele);
-        }
-    }
-    return alleles;
-}
-
-int expected_num_alleles(int n_indiv){
-    std::uniform_int_distribution<int> num_allele_dis(20, 40);
+int expected_num_alleles(){
+    std::uniform_int_distribution<int> num_allele_dis(15, 30);
     return num_allele_dis(*genome_generator);
 }
 
-std::vector<std::vector<double>> gen_init_allele_freqs(std::vector<std::vector<double>> alleles){
+
+/*  Patch::generate_allele_freq_from_beta(int n_alleles)
+        Generates the allelic frequencies in the population for n_alleles alleles from a beta distribution
+*/
+std::vector<std::vector<double>> generate_allele_freq_from_beta(std::vector<std::vector<double>> alleles){
     int n_loci = params["NUM_OF_LOCI"];
-    std::vector<std::vector<double>> freqs;
 
 
-    for (int locus = 0; locus < n_loci; locus++){
+    std::vector<std::vector<double>> props;
+
+    for (int l = 0; l < n_loci; l++){
+        props.push_back(std::vector<double>());
+        int n_alleles = alleles[l].size();
         double rem = 1.0;
         double p, prop;
-        std::vector<double> props;
-
-        for (int al = 0; al < alleles[locus].size(); al++){
-                p = beta_dist(0.6, 1.7, genome_generator);
-                prop = rem * p;
-                rem -= prop;
-                props.push_back(prop);
+        for (int i = 0; i < n_alleles - 1; i++){
+            p = beta_dist(0.6, 1.7, main_generator);
+            prop = rem * p;
+            rem -= prop;
+            props[l].push_back(prop);
         }
-        props.push_back(rem);
-        freqs.push_back(props);
+        props[l].push_back(rem);
     }
 
-    return freqs;
+    return props;
 }
 
-int get_total_population_size(){
-    int ct = 0;
-    for (Patch* patch_i : *patches){
-        ct += patch_i->get_size();
+std::vector<std::vector<int>>  get_num_with_each_allele(std::vector<std::vector<double>> props, int patch_size){
+    int n_loci = params["NUM_OF_LOCI"];
+    int total_n_sites = 2*patch_size;
+
+    std::vector<std::vector<int>> num_per_allele;
+
+
+    for (int l = 0; l < n_loci; l++){
+        num_per_allele.push_back(std::vector<int>());
+        int num_als_this_locus = props[l].size();
+        int n_left = total_n_sites;
+        for (int al_num = 0; al_num < num_als_this_locus; al_num++){
+            double prop = props[l][al_num];
+            int n_this_al = int(total_n_sites*prop);
+            n_left -= n_this_al;
+            num_per_allele[l].push_back(n_this_al);
+        }
+        num_per_allele[l][0] += n_left;
     }
-    return ct;
+    return num_per_allele;
+}
+
+std::vector<std::vector<double>> gen_alleles(){
+    std::vector<std::vector<double>> alleles;
+
+    int n_loci = params["NUM_OF_LOCI"];
+
+    for (int l = 0; l < n_loci; l++){
+        alleles.push_back(std::vector<double>());
+        int n_alleles = expected_num_alleles();
+        for (int i = 0; i < n_alleles; i++){
+            alleles[l].push_back(real_uniform(0.0, 1.0, main_generator));
+        }
+    }
+    return alleles;
 }

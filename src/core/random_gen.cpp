@@ -29,6 +29,12 @@ double std_normal(std::mt19937 *gen){
     return std_norm_dis(*gen);
 }
 
+double normal(double mu, double sigma, std::mt19937* gen){
+    std::normal_distribution<double> norm_dis(mu,sigma);
+    return norm_dis(*gen);
+}
+
+
 double poisson(int lambda, std::mt19937* gen){
     std::poisson_distribution<int> p_dis(lambda);
     return p_dis(*gen);

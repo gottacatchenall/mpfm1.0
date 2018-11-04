@@ -9,8 +9,9 @@ MAIN =              $(ROOT_DIR)/src/core/main.cpp
 INCLUDE_DIRS = 		$(ROOT_DIR)/src/core/						\
 					$(ROOT_DIR)/src/core/AlleleTracker 			\
 					$(ROOT_DIR)/src/core/EnvFactor 				\
-					$(ROOT_DIR)/src/core/Individual 			\
 					$(ROOT_DIR)/src/core/GenomeDict	 			\
+					$(ROOT_DIR)/src/core/Individual 			\
+					$(ROOT_DIR)/src/core/MigrationTracker		\
 					$(ROOT_DIR)/src/core/Patch
 
 SRCS =				$(ROOT_DIR)/src/core/init.cpp 										\
@@ -18,7 +19,9 @@ SRCS =				$(ROOT_DIR)/src/core/init.cpp 										\
 					$(ROOT_DIR)/src/core/EnvFactor/EnvFactor.cpp 						\
 					$(ROOT_DIR)/src/core/GenomeDict/GenomeDict.cpp						\
 					$(ROOT_DIR)/src/core/Individual/Individual.cpp						\
+					$(ROOT_DIR)/src/core/MigrationTracker/MigrationTracker.cpp			\
 					$(ROOT_DIR)/src/core/Patch/Patch.cpp								\
+					$(ROOT_DIR)/src/core/logging.cpp									\
 					$(ROOT_DIR)/src/core/random_gen.cpp
 
 
