@@ -9,6 +9,7 @@ class Individual{
         static int id_counter;
         int id;
         int sex;
+        Patch* patch_born_in;
         Patch* patch;
         double* haplotype0;
         double* haplotype1;
@@ -20,6 +21,7 @@ class Individual{
         Individual(Patch* patch, bool parent_was_migrant);
         ~Individual();
         Patch* get_patch();
+        Patch* get_patch_born_in();
         int get_id();
         int get_sex();
         double get_fitness();

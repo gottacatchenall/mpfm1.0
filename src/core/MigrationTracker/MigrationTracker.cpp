@@ -6,25 +6,36 @@
 MigrationTracker::MigrationTracker(){
 
 	int n_patches = patches->size();
-	this->migration_matrix = new double*[n_patches];
+	this->attempted_migration_matrix = new double*[n_patches];
+	this->successful_migration_matrix = new double*[n_patches];
 	for (int i = 0; i < n_patches; i++){
-		migration_matrix[i] = new double[n_patches];
+		this->attempted_migration_matrix[i] = new double[n_patches];
+		this->successful_migration_matrix[i] = new double[n_patches];
 	}
 
 	for (int i = 0; i < n_patches; i++){
-		for (int j = 0; j < n_patches; j++){ 
-			this->migration_matrix[i][j] = 0;
+		for (int j = 0; j < n_patches; j++){
+			this->attempted_migration_matrix[i][j] = 0;
+			this->successful_migration_matrix[i][j] = 0;
 		}
 	}
 
 }
 
 
-void MigrationTracker::note_migration(Patch* from, Patch* to){
+void MigrationTracker::note_attempted_migration(Patch* from, Patch* to){
 	int x = from->get_id();
 	int y = to->get_id();
 
-	this->migration_matrix[x][y]++; 
+	this->attempted_migration_matrix[x][y]++;
+}
+
+
+void MigrationTracker::note_successful_migration(Patch* from, Patch* to){
+	int x = from->get_id();
+	int y = to->get_id();
+
+	this->successful_migration_matrix[x][y]++;
 }
 
 
@@ -32,7 +43,7 @@ double MigrationTracker::get_emigration(Patch* from, Patch* to){
 	int x = from->get_id();
 	int y = to->get_id();
 
-	return double(migration_matrix[x][y]) / double(from->get_size()); 
+	return double(attempted_migration_matrix[x][y]) / double(from->get_size());
 }
 
 
@@ -40,7 +51,14 @@ double MigrationTracker::get_immigration(Patch* from, Patch* to){
 	int x = from->get_id();
 	int y = to->get_id();
 
-	return double(migration_matrix[x][y]) / double(to->get_size()); 
+	return double(attempted_migration_matrix[x][y]) / double(to->get_size());
+}
+
+double MigrationTracker::get_successful_migration(Patch* from, Patch* to){
+	int x = from->get_id();
+	int y = to->get_id();
+
+	return double(successful_migration_matrix[x][y]) / double(to->get_size());
 }
 
 double MigrationTracker::get_eff_migration(Patch* patch_i){
@@ -53,21 +71,22 @@ double MigrationTracker::get_eff_migration(Patch* patch_i){
 	}
 
 
-	return double(eff_migrants) / double(patch_i->get_size()); 
+	return double(eff_migrants) / double(patch_i->get_size());
 }
 
 int MigrationTracker::get_num_indiv(Patch* from, Patch* to){
 	int x = from->get_id();
 	int y = to->get_id();
-	return migration_matrix[x][y];
+	return attempted_migration_matrix[x][y];
 }
 
 void MigrationTracker::reset_migration_matrix(){
 	int n_patches = patches->size();
 
 	for (int i = 0; i < n_patches; i++){
-		for (int j = 0; j < n_patches; j++){ 
-			this->migration_matrix[i][j] = 0;
+		for (int j = 0; j < n_patches; j++){
+			this->attempted_migration_matrix[i][j] = 0;
+			this->successful_migration_matrix[i][j] = 0;
 		}
 	}
 }

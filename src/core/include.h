@@ -25,7 +25,7 @@ void mating();
 void logging();
 void census();
 void update_progress_bar(int gen);
-
+void check_dispersal();
 // init
 void read_params_file();
 void initialize_rand_generators(int random_seed);
@@ -53,7 +53,8 @@ int get_total_population_size();
 void log_patch(Patch* patch_i);
 void log_fst(std::vector<double> f_st);
 void log_eff_migration(Patch* patch_i);
-void log_migration(Patch* patch_i, Patch* patch_j);
+void log_attempted_migration(Patch* patch_i, Patch* patch_j);
+void log_successful_migration(Patch* patch_i, Patch* patch_j);
 void log_population(Patch* patch_i);
 void log_linkage(int patch_num, int l1, double al1,  int l2, double al2, double D);
 void log_allele_freq(int patch_num, int locus, double allele_val, double freq);

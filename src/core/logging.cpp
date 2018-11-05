@@ -59,8 +59,8 @@ void log_fst(std::vector<double> f_st){
 }
 
 
-void log_migration(Patch* from, Patch* to){
-    std::string migration_file = "migration.csv";
+void log_attempted_migration(Patch* from, Patch* to){
+    std::string migration_file = "attempted_migration.csv";
     std::ofstream file;
     file.open(migration_file.c_str(), std::ios::app);
     if(is_file_empty(migration_file)){
@@ -70,8 +70,23 @@ void log_migration(Patch* from, Patch* to){
     double em = migration_tracker->get_emigration(from, to);
     double im = migration_tracker->get_immigration(from, to);
     int n_indiv = migration_tracker->get_num_indiv(from, to);
-    if (n_indiv > 0){       
+    if (n_indiv > 0){
         file << from->get_id() << "," << to->get_id() << "," << generation << "," << n_indiv << "," << em << "," << im << "\n";
+    }
+}
+
+
+void log_successful_migration(Patch* from, Patch* to){
+    std::string migration_file = "successful_migration.csv";
+    std::ofstream file;
+    file.open(migration_file.c_str(), std::ios::app);
+    if(is_file_empty(migration_file)){
+        file << "patch_from_num, patch_to_num, generation, prop_of_new_patch_migrants\n";
+    }
+
+    double im = migration_tracker->get_successful_migration(from, to);
+    if (im > 0.0){
+        file << from->get_id() << "," << to->get_id() << "," << generation << "," << im <<  "\n";
     }
 }
 

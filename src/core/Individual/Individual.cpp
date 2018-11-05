@@ -12,6 +12,7 @@ Individual::Individual(Patch* patch, bool parent_was_migrant){
     this->id = this->id_counter++;
     this->sex = s;
     this->patch = patch;
+    this->patch_born_in = patch;
     this->has_migrated = false;
     this->haplotype0 = new double[genome_size];
     this->haplotype1 = new double[genome_size];
@@ -30,6 +31,13 @@ Individual::~Individual(){
 
 int Individual::get_id(){
     return this->id;
+}
+
+Patch* Individual::get_patch(){
+    return this->patch;
+}
+Patch* Individual::get_patch_born_in(){
+    return this->patch_born_in;
 }
 
 void Individual::set_locus(int locus, int haplotype, double val){
@@ -70,13 +78,50 @@ void Individual::migrate(){
         return;
     }
 
-    std::vector<Patch*> delta = this->stochastic_foraging();
-    Patch* new_patch = pick_best_patch(delta);
-    if (new_patch){
-        migration_tracker->note_migration(this->patch, new_patch);
+    //std::vector<Patch*> delta = this->stochastic_foraging();
+    //Patch* new_patch = pick_best_patch(delta);
+    Patch* best_patch = this->patch;
+    double distance_strength = 0.01;
+    double pref, dist, decay, score;
+    int current_patch_id = this->patch->get_id();
+
+
+    int mean_num_patches = params["MEAN_NUM_PATCHES_FORAGED"];
+    int num_of_patches = poisson(mean_num_patches, main_generator);
+    int total_n_patches = patches->size();
+
+    std::vector<Patch*> avail_patches;
+
+    for (int i = 0; i < num_of_patches; i++){
+        int index = int_uniform(0, total_n_patches-1, main_generator);
+        avail_patches.push_back((*patches)[index]);
+    }
+
+
+
+    double best_score =  this->calc_pref(this->patch);;
+    for (Patch* patch_i: avail_patches){
+        dist = abs(dist_matrix[current_patch_id][patch_i->get_id()]);
+        decay = exp(-1.0*distance_strength*(dist)*(dist));
+
+        pref = this->calc_pref(patch_i);
+
+        score = pref*decay;
+
+        if (score > best_score){
+            best_score = score;
+            best_patch = patch_i;
+        }
+    }
+
+    if (best_patch != this->patch){
+        migration_tracker->note_attempted_migration(this->patch, best_patch);
         this->has_migrated = true;
         this->patch->remove_individual(this);
-        new_patch->add_individual(this);
+        best_patch->add_individual(this);
+    }
+    else{
+        migration_tracker->note_attempted_migration(this->patch, this->patch);
     }
 }
 
@@ -162,13 +207,13 @@ double Individual::calc_pref(Patch* patch){
 
             y_i = this->get_locus(locus, 0);
             draw = normal((y_i - theta_i), sigma_pref , main_generator );
-            s_i = s_max_i * draw; 
+            s_i = s_max_i * draw;
             p_i = 1.0 + s_i;
             p = p * p_i;
 
             y_i = this->get_locus(locus, 1);
             draw = normal((y_i - theta_i), sigma_pref , main_generator);
-            s_i = s_max_i * draw; 
+            s_i = s_max_i * draw;
             p_i = 1.0 + s_i;
             p = p * p_i;
         }
@@ -202,14 +247,14 @@ void Individual::calc_fitness(){
             locus = genome_dict->fitness_loci[i][j];
 
             x_i = this->get_locus(locus, 0);
-            draw = normal((x_i - theta_i), sigma_s, main_generator );
-            s_i = s_max_i * draw; 
+            draw = normal((x_i - theta_i), sigma_s, main_generator);
+            s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
 
             x_i = this->get_locus(locus, 1);
-            draw = normal((x_i - theta_i), sigma_s, main_generator );
-            s_i = s_max_i * draw; 
+            draw = normal((x_i - theta_i), sigma_s, main_generator);
+            s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
         }

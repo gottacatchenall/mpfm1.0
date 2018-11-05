@@ -21,8 +21,9 @@ int main(int argc, char* argv[]){
 
     for (generation = 0; generation <= num_gen; generation++){
         migration();
-        logging();
         selection();
+        check_dispersal();
+        logging();
         mating();
         if (generation % census_freq == 0 && generation > 0){
             census();
@@ -58,13 +59,14 @@ void logging(){
             log_eff_migration(patch_i);
             log_patch(patch_i);
             for (Patch* patch_j: *patches){
-                if (patch_i != patch_j && patch_j->get_size()){
-                    log_migration(patch_i, patch_j);
+                if (patch_j->get_size()){
+                    log_attempted_migration(patch_i, patch_j);
+                    log_successful_migration(patch_i, patch_j);
                 }
             }
         }
     }
-    log_fst(get_fst()); 
+    log_fst(get_fst());
 }
 
 void mating(){
@@ -106,6 +108,14 @@ void mating(){
             }
         }
         patch_i->replace_current_gen();
+    }
+}
+
+void check_dispersal(){
+    for (Patch* patch_i: *patches){
+        for (Individual* indiv: patch_i->get_all_individuals()){
+            migration_tracker->note_successful_migration(patch_i, indiv->get_patch_born_in());
+        }
     }
 }
 
@@ -165,7 +175,7 @@ std::vector<double> get_fst(){
     if (n_total > 0){
         double hT;
         double hS;
-        
+
 
         for (int l = 0; l < n_loci; l++){
             assert(n_patches);
@@ -180,15 +190,15 @@ std::vector<double> get_fst(){
             else{
                 f_st.push_back(1.0);
             }
-        }  
+        }
     }
 
     else{
         for (int l = 0; l < n_loci; l++){
             f_st.push_back(0.0);
-        }  
+        }
     }
-    
+
 
     return f_st;
 }

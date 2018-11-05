@@ -55,6 +55,8 @@ void AlleleTracker::get_ld(int patch_num){
 }
 
 void AlleleTracker::construct_allele_table(){
+    assert(allele_map[0].size() == 0);
+
     int n_loci = params["NUM_OF_LOCI"];
     allele* al1_1;
     allele* al1_2;
