@@ -2,6 +2,7 @@
 #include "AlleleTracker.h"
 #include "Patch.h"
 #include "Individual.h"
+#include "GenomeDict.h"
 
 AlleleTracker::AlleleTracker(){
     int n_loci = params["NUM_OF_LOCI"];
@@ -9,8 +10,7 @@ AlleleTracker::AlleleTracker(){
 }
 
 
-void AlleleTracker::get_ld(int patch_num){
-    int n_loci = params["NUM_OF_LOCI"];
+void AlleleTracker::get_ld(int patch_num, std::string type){
     double freq;
     std::vector<allele*> alleles;
 
@@ -19,9 +19,39 @@ void AlleleTracker::get_ld(int patch_num){
     Patch* p = (*patches)[patch_num];
     int n_total = p->get_size();
 
+    int n_chromo = params["NUM_OF_CHROMOSOMES"];
+    int n_ef = params["NUM_ENV_FACTORS"];
+    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
+
+
+    std::vector<int> loci;
+    if (type == "fitness"){
+        for (int i = 0; i < n_ef; i++){
+            for (int j = 0; j < n_loci_per_ef; j++){
+                loci.push_back(genome_dict->fitness_loci[i][j]);
+            }
+        }
+    }
+    else if (type == "pref"){
+        for (int i = 0; i < n_ef; i++){
+            for (int j = 0; j < n_loci_per_ef; j++){
+                loci.push_back(genome_dict->pref_loci[i][j]);
+            }
+        }
+    }
+    else if (type == "neutral"){
+        for (int l : genome_dict->neutral_loci){
+            loci.push_back(l);
+        }
+    }
+
+    int n_loci = loci.size();
+
     if (n_total > 0){
         for (int l1 = 0; l1 < n_loci; l1++){
-            alleles = this->allele_map[l1];
+            int l1_i = loci[l1];
+
+            alleles = this->allele_map[l1_i];
             for (allele* al1: alleles){
                 f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
                 if (f_al1 > 0){
@@ -29,7 +59,8 @@ void AlleleTracker::get_ld(int patch_num){
                 }
 
                 for (int l2 = l1+1; l2 < n_loci; l2++){
-                    for (dependent_allele* al2 : al1->loci[l2]){
+                    int l2_i = loci[l2];
+                    for (dependent_allele* al2 : al1->loci[l2_i]){
                         f_both = double(al2->freq_map[patch_num])/double(2*n_total);
                         f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
 
@@ -45,7 +76,74 @@ void AlleleTracker::get_ld(int patch_num){
                         ld = (f_al1 * f_al2) - f_both;
                         if (f_al1 != 0 && f_al2 != 0){
                             ld = (f_al1 * f_al2) - f_both;
-                            log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld);
+                            log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void AlleleTracker::get_global_ld(std::string type){
+
+    double f_al1, f_al2, f_both, ld, freq;
+    int n_chromo = params["NUM_OF_CHROMOSOMES"];
+    int n_ef = params["NUM_ENV_FACTORS"];
+    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
+
+    std::vector<int> loci;
+    if (type == "fitness"){
+        for (int i = 0; i < n_ef; i++){
+            for (int j = 0; j < n_loci_per_ef; j++){
+                loci.push_back(genome_dict->fitness_loci[i][j]);
+            }
+        }
+    }
+    else if (type == "pref"){
+        for (int i = 0; i < n_ef; i++){
+            for (int j = 0; j < n_loci_per_ef; j++){
+                loci.push_back(genome_dict->pref_loci[i][j]);
+            }
+        }
+    }
+    else if (type == "neutral"){
+        for (int l : genome_dict->neutral_loci){
+            loci.push_back(l);
+        }
+    }
+
+    int n_loci = loci.size();
+    int n_total = get_total_population_size();
+    std::vector<allele*> alleles;
+
+    if (n_total > 0){
+        for (int l1 = 0; l1 < n_loci; l1++){
+            int l1_i = loci[l1];
+
+            alleles = this->allele_map[l1_i];
+            for (allele* al1: alleles){
+                f_al1 = double(al1->n_total)/double(2*n_total);
+
+                for (int l2 = l1+1; l2 < n_loci; l2++){
+                    int l2_i = loci[l2];
+                    for (dependent_allele* al2 : al1->loci[l2_i]){
+                        f_both = double(al2->n_total)/double(2*n_total);
+                        f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->n_total)/double(2*n_total);
+
+
+                        if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
+                            printf("al1_n = %d\n", al1->n_total);
+                            printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->n_total);
+                            printf("both_n = %d\n", al2->n_total);
+                            printf("ld assert\n");
+                            exit(-1);
+                        }
+
+                        ld = (f_al1 * f_al2) - f_both;
+                        if (f_al1 != 0 && f_al2 != 0){
+                            ld = (f_al1 * f_al2) - f_both;
+                            log_global_linkage(l1, al1->allele_val, l2, al2->allele_val, ld, type);
                         }
                     }
                 }

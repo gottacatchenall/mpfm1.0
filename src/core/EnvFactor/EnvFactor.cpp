@@ -12,6 +12,10 @@ double EnvFactor::get_env_factor_value(double x, double y){
     return this->map[x_cell][y_cell];
 }
 
+double EnvFactor::get_cell_value(int x, int y){
+    return this->map[x][y];
+}
+
 double** EnvFactor::generate_fractal(int size, double H_VAL){
     int n = size;
     double** tmp = new double*[n];

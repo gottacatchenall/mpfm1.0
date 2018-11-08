@@ -44,6 +44,13 @@ void initialize_env_factors(){
         EnvFactor* ef_i = new EnvFactor(size, h_val);
         envFactors->push_back(ef_i);
     }
+
+    for (int i = 0; i < size; i++){
+        for (int j = 0; j < size; j++){
+            log_env_factors(i,j);
+        }
+    }
+
 }
 
 void initialize_patches(){

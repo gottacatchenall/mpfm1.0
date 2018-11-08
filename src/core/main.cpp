@@ -123,7 +123,12 @@ void census(){
     AlleleTracker al_tracker;
     al_tracker.construct_allele_table();
     for (Patch* patch_i: *patches){
-        al_tracker.get_ld(patch_i->get_id());
+        al_tracker.get_ld(patch_i->get_id(), "fitness");
+        al_tracker.get_ld(patch_i->get_id(), "pref");
+        al_tracker.get_ld(patch_i->get_id(), "neutral");
+        al_tracker.get_global_ld("fitness");
+        al_tracker.get_global_ld("pref");
+        al_tracker.get_global_ld("neutral");
     }
 }
 

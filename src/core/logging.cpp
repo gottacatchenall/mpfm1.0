@@ -1,6 +1,7 @@
 #include "include.h"
 #include "Patch.h"
 #include "Individual.h"
+#include "EnvFactor.h"
 #include "MigrationTracker.h"
 
 void log_patch(Patch* patch_i){
@@ -8,15 +9,28 @@ void log_patch(Patch* patch_i){
     std::ofstream file;
     file.open(patch_file.c_str(), std::ios::app);
 
+    int n_ef = params["NUM_ENV_FACTORS"];
+
+
     if(is_file_empty(patch_file)){
-        file << "patch_num, generation, x, y, K, mean_w, se_w\n";
+        file << "patch_num, generation, x, y, K, mean_w, se_w,";
+        for (int i = 0; i < n_ef; i++){
+            file << "ef" << std::to_string(i) << ",";
+        }
+        file << "\n";
     }
 
     double w_bar = mean_w(patch_i);
     double w_sd = sd_w(patch_i, w_bar);
 
-    file << patch_i->get_id() << "," << generation << "," << patch_i->get_x() << "," << patch_i->get_y() << ","  << patch_i->get_K() << "," << w_bar  << "," << w_sd << "\n";
+    file << patch_i->get_id() << "," << generation << "," << patch_i->get_x() << "," << patch_i->get_y() << ","  << patch_i->get_K() << "," << w_bar  << "," << w_sd;
+
+    for (double val : patch_i->get_env_factors()){
+        file << "," << std::to_string(val);
+    }
+    file << "\n";
 }
+
 
 double sd_w(Patch* patch_i, double w_bar){
     double se = 0;
@@ -116,17 +130,31 @@ void log_population(Patch* patch_i){
     file << patch_i->get_id() << "," << generation << ","  << n << "," << double(n)/double(patch_i->get_K()) << "\n";
 
 }
-void log_linkage(int patch_num, int l1, double al1, int l2, double al2, double D){
+void log_linkage(int patch_num, int l1, double al1, int l2, double al2, double D, std::string type){
     std::string linkage_file = "linkage.csv";
 
     std::ofstream file;
     file.open(linkage_file.c_str(), std::ios::app);
     if(is_file_empty(linkage_file)){
-        file << " patch_num, generation, locus1, allele1, locus2, allele2, D\n";
+        file << " patch_num, generation, locus1, allele1, locus2, allele2, D, type\n";
     }
 
-    file  << patch_num << "," << generation << "," << l1 << "," << al1 << "," << l2 << "," << al2 << "," << D << "\n";
+    file  << patch_num << "," << generation << "," << l1 << "," << al1 << "," << l2 << "," << al2 << "," << D << "," << type <<  "\n";
 }
+
+void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type){
+    std::string linkage_file = "global_linkage.csv";
+
+    std::ofstream file;
+    file.open(linkage_file.c_str(), std::ios::app);
+    if(is_file_empty(linkage_file)){
+        file << "generation, locus1, allele1, locus2, allele2, D, type\n";
+    }
+
+    file << generation << "," << l1 << "," << al1 << "," << l2 << "," << al2 << "," << D << "," << type <<  "\n";
+
+}
+
 
 void log_allele_freq(int patch_num, int locus, double allele_val, double freq){
     std::string allele_freq_file = "allele_freq.csv";
@@ -138,7 +166,20 @@ void log_allele_freq(int patch_num, int locus, double allele_val, double freq){
 
     file << patch_num << "," << generation << "," << locus << "," << allele_val << "," << freq << "\n";
 }
-void log_env_factors(Patch* patch_i){
+
+void log_locus(int l, int ef, std::string type){
+    std::string locus_file = "loci.csv";
+    std::ofstream file;
+
+    file.open(locus_file.c_str(), std::ios::app);
+    if(is_file_empty(locus_file)){
+        file << "locus,ef,type\n";
+    }
+
+    file << l << "," << ef << "," << type << "\n";
+}
+
+void log_env_factors(int x, int y){
     int n_ef = params["NUM_ENV_FACTORS"];
 
     std::string env_factor_file = "env_factors.csv";
@@ -146,13 +187,21 @@ void log_env_factors(Patch* patch_i){
     file.open(env_factor_file.c_str(), std::ios::app);
 
     if(is_file_empty(env_factor_file)){
-        file << "patch_num, generation,";
+        file << "generation,x,y";
 
         for (int i = 0; i < n_ef; i++){
-            file << "ef" << i << ",";
+            file << "," << "ef" << i;
         }
         file << "\n";
     }
+
+    file << generation << "," << x << "," << y;
+
+    for (EnvFactor* ef : *envFactors){
+        file << "," << ef->get_cell_value(x,y);
+    }
+
+    file << "\n";
 }
 
 bool is_file_empty(std::string path){
