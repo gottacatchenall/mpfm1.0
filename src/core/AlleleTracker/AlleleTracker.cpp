@@ -45,41 +45,53 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
         }
     }
 
+    std::sort(loci.begin(), loci.end());
+
+
+
     int n_loci = loci.size();
 
     if (n_total > 0){
         for (int l1 = 0; l1 < n_loci; l1++){
             int l1_i = loci[l1];
 
-            alleles = this->allele_map[l1_i];
-            for (allele* al1: alleles){
-                f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
-                if (f_al1 > 0){
-                    log_allele_freq(patch_num, al1->locus, al1->allele_val, f_al1);
-                }
+            for (int l2 = l1+1; l2 < n_loci; l2++){
+                alleles = this->allele_map[l1_i];
+                int l2_i = loci[l2];
+                double sum = 0.0;
+                int ct = 0;
 
-                for (int l2 = l1+1; l2 < n_loci; l2++){
-                    int l2_i = loci[l2];
-                    for (dependent_allele* al2 : al1->loci[l2_i]){
-                        f_both = double(al2->freq_map[patch_num])/double(2*n_total);
-                        f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
+                for (allele* al1: alleles){
+                    f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
+                    if (f_al1 > 0){
+                        log_allele_freq(patch_num, al1->locus, al1->allele_val, f_al1);
+                        for (dependent_allele* al2 : al1->loci[l2_i]){
+                            f_both = double(al2->freq_map[patch_num])/double(2*n_total);
+                            f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
 
+                            if (f_al2 > 0){
+                                if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
+                                    printf("al1_n = %d\n", al1->freq_map[patch_num]);
+                                    printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num]);
+                                    printf("both_n = %d\n", al2->freq_map[patch_num]);
+                                    printf("ld assert\n");
+                                    exit(-1);
+                                }
 
-                        if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
-                            printf("al1_n = %d\n", al1->freq_map[patch_num]);
-                            printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num]);
-                            printf("both_n = %d\n", al2->freq_map[patch_num]);
-                            printf("ld assert\n");
-                            exit(-1);
-                        }
-
-                        ld = (f_al1 * f_al2) - f_both;
-                        if (f_al1 != 0 && f_al2 != 0){
-                            ld = (f_al1 * f_al2) - f_both;
-                            log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
+                                ld = (f_al1 * f_al2) - f_both;
+                                sum += abs(ld);
+                                ct++;
+                                //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
+                            }
                         }
                     }
                 }
+                if (ct == 0){
+                    // only happens when l2 = l1+1
+                    //printf("somehow ct ended up at 0?\n");
+                }
+                double avg_ld_this_pair = double(sum)/double(ct);
+                log_linkage(patch_num, l1, l2, avg_ld_this_pair, type);
             }
         }
     }
@@ -115,39 +127,49 @@ void AlleleTracker::get_global_ld(std::string type){
 
     int n_loci = loci.size();
     int n_total = get_total_population_size();
+    std::sort(loci.begin(), loci.end());
+
     std::vector<allele*> alleles;
 
-    if (n_total > 0){
-        for (int l1 = 0; l1 < n_loci; l1++){
-            int l1_i = loci[l1];
+    for (int l1 = 0; l1 < n_loci; l1++){
+        int l1_i = loci[l1];
 
+        for (int l2 = l1+1; l2 < n_loci; l2++){
             alleles = this->allele_map[l1_i];
+            int l2_i = loci[l2];
+            double sum = 0.0;
+            int ct = 0;
+
             for (allele* al1: alleles){
                 f_al1 = double(al1->n_total)/double(2*n_total);
-
-                for (int l2 = l1+1; l2 < n_loci; l2++){
-                    int l2_i = loci[l2];
+                if (f_al1 > 0){
                     for (dependent_allele* al2 : al1->loci[l2_i]){
                         f_both = double(al2->n_total)/double(2*n_total);
                         f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->n_total)/double(2*n_total);
 
+                        if (f_al2 > 0){
+                            if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
+                                printf("al1_n = %d\n", al1->n_total);
+                                printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->n_total);
+                                printf("both_n = %d\n", al2->n_total);
+                                printf("ld assert\n");
+                                exit(-1);
+                            }
 
-                        if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
-                            printf("al1_n = %d\n", al1->n_total);
-                            printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->n_total);
-                            printf("both_n = %d\n", al2->n_total);
-                            printf("ld assert\n");
-                            exit(-1);
-                        }
-
-                        ld = (f_al1 * f_al2) - f_both;
-                        if (f_al1 != 0 && f_al2 != 0){
                             ld = (f_al1 * f_al2) - f_both;
-                            log_global_linkage(l1, al1->allele_val, l2, al2->allele_val, ld, type);
+                            sum += abs(ld);
+                            ct++;
+                            //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
                         }
                     }
                 }
             }
+            if (ct == 0){
+                // only happens when l2 = l1+1
+                //printf("somehow ct ended up at 0?\n");
+            }
+            double avg_ld_this_pair = double(sum)/double(ct);
+            log_global_linkage(l1, l2, avg_ld_this_pair, type);
         }
     }
 }
@@ -169,7 +191,7 @@ void AlleleTracker::construct_allele_table(){
             for (int l1 = 0; l1 < n_loci; l1++){
                 al1_1 = find_allele(l1, indiv->get_locus(l1, 0));
                 al1_2 = find_allele(l1, indiv->get_locus(l1, 1));
-                for (int l2 = l1+1; l2 < n_loci; l2++){
+                for (int l2 = l1; l2 < n_loci; l2++){
                     this->add_dependent_allele(al1_1, l2, indiv->get_locus(l2, 0), patch_id);
                     //this->add_dependent_allele(al1_1, l2, indiv->get_locus(l2, 1), patch_id);
                     //this->add_dependent_allele(al1_2, l2, indiv->get_locus(l2, 0), patch_id);

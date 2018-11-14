@@ -130,7 +130,8 @@ void log_population(Patch* patch_i){
     file << patch_i->get_id() << "," << generation << ","  << n << "," << double(n)/double(patch_i->get_K()) << "\n";
 
 }
-void log_linkage(int patch_num, int l1, double al1, int l2, double al2, double D, std::string type){
+
+void log_linkage(int patch_num, int l1, int l2, double D, std::string type){
     std::string linkage_file = "linkage.csv";
 
     std::ofstream file;
@@ -139,10 +140,11 @@ void log_linkage(int patch_num, int l1, double al1, int l2, double al2, double D
         file << " patch_num, generation, locus1, allele1, locus2, allele2, D, type\n";
     }
 
-    file  << patch_num << "," << generation << "," << l1 << "," << al1 << "," << l2 << "," << al2 << "," << D << "," << type <<  "\n";
+    file  << patch_num << "," << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
 }
 
-void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type){
+void log_global_linkage(int l1, int l2, double D, std::string type){
+//void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type){
     std::string linkage_file = "global_linkage.csv";
 
     std::ofstream file;
@@ -151,7 +153,7 @@ void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::s
         file << "generation, locus1, allele1, locus2, allele2, D, type\n";
     }
 
-    file << generation << "," << l1 << "," << al1 << "," << l2 << "," << al2 << "," << D << "," << type <<  "\n";
+    file << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
 
 }
 

@@ -26,6 +26,22 @@ def get_description():
 
     return description
 
+def read_batch_file(file_name):
+    try:
+        with open(file_name) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            nruns = len(next(csv_reader))-1
+            param_list = [{} for i in range(0,nruns)]
+
+            for row in csv_reader:
+                for i in range(0, nruns):
+                    param_list[i][row[0]] = row[i+1]
+        return param_list
+
+    except:
+        print("Failed to read batch file!")
+        exit(-1)
+
 def setup_arg_parser(param_table):
     def get_type(type):
         type_dict = {'int': int, 'double': float, 'bool': bool, 'enum': str, 'str': str}

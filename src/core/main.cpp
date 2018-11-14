@@ -25,13 +25,18 @@ int main(int argc, char* argv[]){
         check_dispersal();
         logging();
         mating();
+
         if (generation % census_freq == 0 && generation > 0){
             census();
         }
+
+        // env factor stochasticity
+        // patch k stochasticity
+
+
         update_progress_bar(generation);
         migration_tracker->reset_migration_matrix();
     }
-
     return 0;
 }
 
@@ -222,14 +227,12 @@ void update_progress_bar(int gen){
 
     double progress = double(gen)/double(n_gen);
     int barWidth = 50;
-
-       std::cout << "[";
-       int pos = barWidth * progress;
-       for (int i = 0; i < barWidth; ++i) {
-           if (i <= pos) std::cout << "=";
-           else std::cout << " ";
-       }
-       std::cout << "] [" << gen << " / " << n_gen << "] \r";
-       std::cout.flush();
-
+   std::cout << "\t[";
+   int pos = barWidth * progress;
+   for (int i = 0; i < barWidth; ++i) {
+       if (i <= pos) std::cout << "=";
+       else std::cout << " ";
+   }
+   std::cout << "] [" << gen << " / " << n_gen << "] \r";
+   std::cout.flush();
 }
