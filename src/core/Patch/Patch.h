@@ -11,8 +11,8 @@ class Patch{
         double x;
         double y;
         double K;
-        std::unordered_map<int,Individual*>* individuals;
-        std::unordered_map<int,Individual*>* next_gen;
+        std::vector<Individual*>* individuals;
+        std::vector<Individual*>* next_gen;
         std::vector<double> env_factors;
     public:
         Patch(double x, double y, double K);

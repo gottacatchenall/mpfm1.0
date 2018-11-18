@@ -11,7 +11,6 @@ AlleleTracker::AlleleTracker(){
 
 
 void AlleleTracker::get_ld(int patch_num, std::string type){
-    double freq;
     std::vector<allele*> alleles;
 
     double f_al1, f_al2, f_both, ld;
@@ -19,7 +18,6 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
     Patch* p = (*patches)[patch_num];
     int n_total = p->get_size();
 
-    int n_chromo = params["NUM_OF_CHROMOSOMES"];
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
 
@@ -99,8 +97,7 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
 
 void AlleleTracker::get_global_ld(std::string type){
 
-    double f_al1, f_al2, f_both, ld, freq;
-    int n_chromo = params["NUM_OF_CHROMOSOMES"];
+    double f_al1, f_al2, f_both, ld;
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
 

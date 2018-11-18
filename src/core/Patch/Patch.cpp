@@ -11,8 +11,8 @@ Patch::Patch(double x, double y, double K){
     this->K = K;
     this->id = id_counter++;
 
-    this->individuals = new std::unordered_map<int, Individual*>;
-    this->next_gen = new std::unordered_map<int, Individual*>;
+    this->individuals = new std::vector<Individual*>;
+    this->next_gen = new std::vector<Individual*>;
 }
 
 double Patch::get_x(){
@@ -28,11 +28,12 @@ double Patch::get_K(){
 }
 
 void Patch::add_individual(Individual* indiv){
-    this->individuals->insert(std::make_pair(indiv->get_id(), indiv));
+    this->individuals->push_back(indiv);
 }
 
 void Patch::remove_individual(Individual* indiv){
-    this->individuals->erase(indiv->get_id());
+    int index = std::distance(this->individuals->begin(), std::find(this->individuals->begin(), this->individuals->end(), indiv));
+    this->individuals->erase(this->individuals->begin()+index);
 }
 
 int Patch::get_size(){
@@ -44,21 +45,7 @@ int Patch::get_id(){
 }
 
 std::vector<Individual*> Patch::get_all_individuals(){
-   std::vector<Individual*> indiv;
-
-   for (auto ind: *(this->individuals)){
-        /*#if __DEBUG__
-           int n_loci = params["NUM_OF_LOCI"];
-           for (int i = 0; i < n_loci; i++){
-               double al0 = ind.second->get_locus(i, 0);
-               double al1 = ind.second->get_locus(i, 1);
-               assert(al0 >= 0.0 && al0 <= 1.0 && al1 >= 0.0 && al1 <= 1.0);
-           }
-       #endif*/
-       indiv.push_back(ind.second);
-   }
-
-   return indiv;
+   return (*this->individuals);
 }
 
 std::vector<double> Patch::get_env_factors(){
@@ -136,11 +123,11 @@ std::vector<std::vector<Individual*>> Patch::split_by_sex(){
 }
 
 void Patch::add_to_next_gen(Individual* indiv){
-    this->next_gen->insert(std::make_pair(indiv->get_id(), indiv));
+    this->next_gen->push_back(indiv);
 }
 
 void Patch::replace_current_gen(){
     delete this->individuals;
     this->individuals = this->next_gen;
-    this->next_gen = new std::unordered_map<int, Individual*>;
+    this->next_gen = new std::vector<Individual*>;
 }

@@ -42,7 +42,8 @@ int main(int argc, char* argv[]){
 
 void migration(){
     for (Patch* patch_i: *patches){
-        for (Individual* indiv: patch_i->get_all_individuals() ){
+        std::vector<Individual*> indivs = patch_i->get_all_individuals();
+        for (Individual* indiv: indivs){
             indiv->migrate();
         }
     }
@@ -50,7 +51,8 @@ void migration(){
 
 void selection(){
     for (Patch* patch_i: *patches){
-        for (Individual* indiv: patch_i->get_all_individuals() ){
+        std::vector<Individual*> indivs = patch_i->get_all_individuals();
+        for (Individual* indiv: indivs){
             indiv->calc_fitness();
         }
         patch_i->selection();
@@ -84,19 +86,27 @@ void mating(){
         std::vector<Individual*> males = smap[1];
 
         Individual* random_male;
+        Individual* random_female;
+
+
         Individual* offspring;
         int num_males = males.size();
-        if (num_males > 0){
-            for (Individual* female: females){
-                int n_off = poisson(mean_off_per_female, main_generator);
-                int index = int_uniform(0, males.size()-1, main_generator);
-                random_male = males[index];
+        int num_females = females.size();
 
-                bool parent_migrated = (random_male->has_migrated || female->has_migrated);
-
+        if (num_males > 0 && num_females > 0){
+                int m_index, f_index;
+                bool parent_migrated;
+                int n_off = mean_off_per_female*num_females;
                 for (int i = 0; i < n_off; i++){
+                    m_index = int_uniform(0, num_males-1, main_generator);
+                    f_index = int_uniform(0, num_females-1, main_generator);
+                    random_male = males[m_index];
+                    random_female = females[f_index];
+
+                    parent_migrated = (random_male->has_migrated || random_female->has_migrated);
+
                     offspring = new Individual(patch_i, parent_migrated);
-                    offspring->gen_haplotype(female, 0);
+                    offspring->gen_haplotype(random_female, 0);
                     offspring->gen_haplotype(random_male, 1);
 
                     #if __DEBUG__
@@ -110,7 +120,6 @@ void mating(){
 
                     patch_i->add_to_next_gen(offspring);
                 }
-            }
         }
         patch_i->replace_current_gen();
     }

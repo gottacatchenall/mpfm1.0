@@ -17,14 +17,14 @@ double EnvFactor::get_cell_value(int x, int y){
 }
 
 double** EnvFactor::generate_fractal(int size, double H_VAL){
-    int n = size;
+    int n = size+1;
     double** tmp = new double*[n];
     for (int i = 0; i < n; i++){
         tmp[i] = new double[n];
     }
 
     double delta = 1;
-    int N = size-1;
+    int N = size;
 
     int maxlevel = log2(size);
 
@@ -103,12 +103,8 @@ double** EnvFactor::generate_fractal(int size, double H_VAL){
         }
     }
 
-    if (min > 0){
-        min = -1*min;
-    }
-
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    for (int i = 0; i < N; i++){
+        for (int j = 0; j < N; j++){
             grid[i][j] = double(max - tmp[i][j])/(max-min);
         }
     }

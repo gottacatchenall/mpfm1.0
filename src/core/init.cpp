@@ -36,7 +36,7 @@ void read_params_file(){
 void initialize_env_factors(){
     int n_ef = params["NUM_ENV_FACTORS"];
     int size = params["ENV_FACTOR_RESOLUTION"];
-    int h_val = params["ENV_FACTOR_H_VALUE"];
+    double h_val = params["ENV_FACTOR_H_VALUE"];
 
     envFactors = new std::vector<EnvFactor*>;
 

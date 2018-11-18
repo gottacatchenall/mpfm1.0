@@ -137,7 +137,7 @@ void log_linkage(int patch_num, int l1, int l2, double D, std::string type){
     std::ofstream file;
     file.open(linkage_file.c_str(), std::ios::app);
     if(is_file_empty(linkage_file)){
-        file << " patch_num, generation, locus1, allele1, locus2, allele2, D, type\n";
+        file << " patch_num, generation, locus1, locus2, D, type\n";
     }
 
     file  << patch_num << "," << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
@@ -150,7 +150,7 @@ void log_global_linkage(int l1, int l2, double D, std::string type){
     std::ofstream file;
     file.open(linkage_file.c_str(), std::ios::app);
     if(is_file_empty(linkage_file)){
-        file << "generation, locus1, allele1, locus2, allele2, D, type\n";
+        file << "generation, locus1, locus2, D, type\n";
     }
 
     file << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
@@ -183,10 +183,14 @@ void log_locus(int l, int ef, std::string type){
 
 void log_env_factors(int x, int y){
     int n_ef = params["NUM_ENV_FACTORS"];
+    int size = params["ENV_FACTOR_RESOLUTION"];
 
     std::string env_factor_file = "env_factors.csv";
     std::ofstream file;
     file.open(env_factor_file.c_str(), std::ios::app);
+
+
+
 
     if(is_file_empty(env_factor_file)){
         file << "generation,x,y";

@@ -6,7 +6,6 @@
 
 class EnvFactor{
     private:
-        int id;
         double** map;
     public:
         EnvFactor(int size, double h_val);
