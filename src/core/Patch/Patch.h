@@ -8,14 +8,14 @@ class Patch{
     private:
         static int id_counter;
         int id;
-        double x;
-        double y;
+        int x;
+        int y;
         double K;
         std::vector<Individual*>* individuals;
         std::vector<Individual*>* next_gen;
         std::vector<double> env_factors;
     public:
-        Patch(double x, double y, double K);
+        Patch(int x, int y, double K);
         double get_x();
         double get_y();
         double get_K();

@@ -13,7 +13,7 @@ void log_patch(Patch* patch_i){
 
 
     if(is_file_empty(patch_file)){
-        file << "patch_num, generation, x, y, K, mean_w, se_w,";
+        file << "patch_num,generation,x,y,n_indiv,K,prop_of_k,mean_w,se_w,";
         for (int i = 0; i < n_ef; i++){
             file << "ef" << std::to_string(i) << ",";
         }
@@ -23,7 +23,10 @@ void log_patch(Patch* patch_i){
     double w_bar = mean_w(patch_i);
     double w_sd = sd_w(patch_i, w_bar);
 
-    file << patch_i->get_id() << "," << generation << "," << patch_i->get_x() << "," << patch_i->get_y() << ","  << patch_i->get_K() << "," << w_bar  << "," << w_sd;
+    int n = patch_i->get_size();
+    int k = patch_i->get_K();
+
+    file << patch_i->get_id() << "," << generation << "," << patch_i->get_x() << "," << patch_i->get_y() << "," << n << "," << k << "," << double(n)/double(k) << "," << w_bar  << "," << w_sd;
 
     for (double val : patch_i->get_env_factors()){
         file << "," << std::to_string(val);
@@ -58,18 +61,15 @@ double mean_w(Patch* patch_i){
     return double(s)/double(ct);
 }
 
-void log_fst(std::vector<double> f_st){
+void log_fst(int locus, double fst, std::string type){
     std::string fst_file = "f_st.csv";
     std::ofstream file;
     file.open(fst_file.c_str(), std::ios::app);
 
     if(is_file_empty(fst_file)){
-        file << "generation, locus, F_st\n";
+        file << "generation,locus,type,F_st\n";
     }
-    int n_loci = params["NUM_OF_LOCI"];
-    for (int l = 0; l < n_loci; l++){
-        file << generation << "," << l << "," << f_st[l] << "\n";
-    }
+    file << generation << "," << locus << "," << type << "," << fst << "\n";
 }
 
 
@@ -78,7 +78,7 @@ void log_attempted_migration(Patch* from, Patch* to){
     std::ofstream file;
     file.open(migration_file.c_str(), std::ios::app);
     if(is_file_empty(migration_file)){
-        file << "patch_from_num, patch_to_num, generation, num_indiv, prop_of_old_patch_migrants, prop_of_new_patch_migrants\n";
+        file << "patch_from_num,patch_to_num,generation,num_indiv,prop_of_old_patch_migrants,prop_of_new_patch_migrants\n";
     }
 
     double em = migration_tracker->get_emigration(from, to);
@@ -95,7 +95,7 @@ void log_successful_migration(Patch* from, Patch* to){
     std::ofstream file;
     file.open(migration_file.c_str(), std::ios::app);
     if(is_file_empty(migration_file)){
-        file << "patch_from_num, patch_to_num, generation, prop_of_new_patch_migrants\n";
+        file << "patch_from_num,patch_to_num,generation,prop_of_new_patch_migrants\n";
     }
 
     double im = migration_tracker->get_successful_migration(from, to);
@@ -109,7 +109,7 @@ void log_eff_migration(Patch* patch_i){
     std::ofstream file;
     file.open(eff_migration_file.c_str(), std::ios::app);
     if(is_file_empty(eff_migration_file)){
-        file << "patch_num, generation, eff_migration\n";
+        file << "patch_num,generation,eff_migration\n";
     }
 
     file << patch_i->get_id() << "," << generation << "," << double(migration_tracker->get_eff_migration(patch_i)) << "\n";
@@ -122,7 +122,7 @@ void log_population(Patch* patch_i){
     file.open(population_file.c_str(), std::ios::app);
 
     if(is_file_empty(population_file)){
-        file << "patch_num, generation, num_indiv, proportion_of_k\n";
+        file << "patch_num,generation,num_indiv,proportion_of_k\n";
     }
 
     int n = patch_i->get_size();
@@ -137,53 +137,72 @@ void log_linkage(int patch_num, int l1, int l2, double D, std::string type){
     std::ofstream file;
     file.open(linkage_file.c_str(), std::ios::app);
     if(is_file_empty(linkage_file)){
-        file << " patch_num, generation, locus1, locus2, D, type\n";
+        file << " patch_num,generation,locus1,locus2,D,type\n";
     }
 
     file  << patch_num << "," << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
 }
 
 void log_global_linkage(int l1, int l2, double D, std::string type){
-//void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type){
     std::string linkage_file = "global_linkage.csv";
 
     std::ofstream file;
     file.open(linkage_file.c_str(), std::ios::app);
     if(is_file_empty(linkage_file)){
-        file << "generation, locus1, locus2, D, type\n";
+        file << "generation,locus1,locus2,D,type\n";
     }
 
     file << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
-
 }
 
 
-void log_allele_freq(int patch_num, int locus, double allele_val, double freq){
+void log_allele_freq(int patch_num, int locus, double allele_val, double freq, std::string type){
     std::string allele_freq_file = "allele_freq.csv";
     std::ofstream file;
     file.open(allele_freq_file.c_str(), std::ios::app);
     if(is_file_empty(allele_freq_file)){
-        file << "patch_num, generation, locus, allele_val, frequency\n";
+        file << "patch_num,generation,locus,allele_val,frequency,type\n";
     }
 
-    file << patch_num << "," << generation << "," << locus << "," << allele_val << "," << freq << "\n";
+    file << patch_num << "," << generation << "," << locus << "," << allele_val << "," << freq << "," << type << "\n";
 }
 
-void log_locus(int l, int ef, std::string type){
+void log_locus(int l, int ef, double strength, std::string type){
     std::string locus_file = "loci.csv";
     std::ofstream file;
 
     file.open(locus_file.c_str(), std::ios::app);
     if(is_file_empty(locus_file)){
-        file << "locus,ef,type\n";
+        file << "locus,ef,selection_strength,type\n";
     }
 
-    file << l << "," << ef << "," << type << "\n";
+    file << l << "," << ef << "," << strength <<  "," << type << "\n";
+}
+
+void log_colonization(int patch_num){
+    std::string col_file = "colonization.csv";
+    std::ofstream file;
+
+    file.open(col_file.c_str(), std::ios::app);
+    if(is_file_empty(col_file)){
+        file << "generation,patch_num\n";
+    }
+    file << generation << "," << patch_num << "\n";
+}
+void log_extinction(int patch_num){
+    std::string ext_file = "extinction.csv";
+    std::ofstream file;
+
+    file.open(ext_file.c_str(), std::ios::app);
+    if(is_file_empty(ext_file)){
+        file << "generation,patch_num\n";
+    }
+
+    file << generation << "," << patch_num << "\n";
 }
 
 void log_env_factors(int x, int y){
     int n_ef = params["NUM_ENV_FACTORS"];
-    int size = params["ENV_FACTOR_RESOLUTION"];
 
     std::string env_factor_file = "env_factors.csv";
     std::ofstream file;

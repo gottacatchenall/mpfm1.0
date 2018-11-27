@@ -35,7 +35,7 @@ void read_params_file(){
 
 void initialize_env_factors(){
     int n_ef = params["NUM_ENV_FACTORS"];
-    int size = params["ENV_FACTOR_RESOLUTION"];
+    int size = params["SIDE_LENGTH"];
     double h_val = params["ENV_FACTOR_H_VALUE"];
 
     envFactors = new std::vector<EnvFactor*>;
@@ -45,12 +45,7 @@ void initialize_env_factors(){
         envFactors->push_back(ef_i);
     }
 
-    for (int i = 0; i < size; i++){
-        for (int j = 0; j < size; j++){
-            log_env_factors(i,j);
-        }
-    }
-
+    write_efs();
 }
 
 void initialize_patches(){
@@ -59,18 +54,22 @@ void initialize_patches(){
     double k_sigma = params["PATCH_K_SD"];
     double side_len = params["SIDE_LENGTH"];
 
-    std::normal_distribution<double> k_dis(k_mean, k_sigma);
-    std::uniform_real_distribution<double> x_dis(0, side_len);
-    std::uniform_real_distribution<double> y_dis(0, side_len);
+    // TODO
+        // fix this ffs
+
+
 
     patches = new std::vector<Patch*>;
 
     for (int i = 0; i < n_patches; i++){
-        double k = k_dis(*patch_generator);
+        double k = normal(k_mean, k_sigma, patch_generator);
+        int x = int_uniform(0, side_len-1, patch_generator);
+        int y = int_uniform(0, side_len-1, patch_generator);
+
         if (k < 0){
             k = 0;
         }
-        Patch *tmp = new Patch(x_dis(*patch_generator), y_dis(*patch_generator), k);
+        Patch *tmp = new Patch(x,y,k);
         patches->push_back(tmp);
     }
 }

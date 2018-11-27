@@ -30,13 +30,6 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
             }
         }
     }
-    else if (type == "pref"){
-        for (int i = 0; i < n_ef; i++){
-            for (int j = 0; j < n_loci_per_ef; j++){
-                loci.push_back(genome_dict->pref_loci[i][j]);
-            }
-        }
-    }
     else if (type == "neutral"){
         for (int l : genome_dict->neutral_loci){
             loci.push_back(l);
@@ -52,9 +45,14 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
     if (n_total > 0){
         for (int l1 = 0; l1 < n_loci; l1++){
             int l1_i = loci[l1];
-
+            alleles = this->allele_map[l1_i];
+            for (allele* al1: alleles){
+                f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
+                if (f_al1 > 0.0){
+                    log_allele_freq(patch_num, al1->locus, al1->allele_val, f_al1, type);
+                }
+            }
             for (int l2 = l1+1; l2 < n_loci; l2++){
-                alleles = this->allele_map[l1_i];
                 int l2_i = loci[l2];
                 double sum = 0.0;
                 int ct = 0;
@@ -62,7 +60,6 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
                 for (allele* al1: alleles){
                     f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
                     if (f_al1 > 0){
-                        log_allele_freq(patch_num, al1->locus, al1->allele_val, f_al1);
                         for (dependent_allele* al2 : al1->loci[l2_i]){
                             f_both = double(al2->freq_map[patch_num])/double(2*n_total);
                             f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
@@ -106,13 +103,6 @@ void AlleleTracker::get_global_ld(std::string type){
         for (int i = 0; i < n_ef; i++){
             for (int j = 0; j < n_loci_per_ef; j++){
                 loci.push_back(genome_dict->fitness_loci[i][j]);
-            }
-        }
-    }
-    else if (type == "pref"){
-        for (int i = 0; i < n_ef; i++){
-            for (int j = 0; j < n_loci_per_ef; j++){
-                loci.push_back(genome_dict->pref_loci[i][j]);
             }
         }
     }

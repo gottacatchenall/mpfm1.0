@@ -1,15 +1,63 @@
 #include "EnvFactor.h"
 
 EnvFactor::EnvFactor(int size, double h_val){
-    this->map = generate_fractal(size, h_val);
+    this->fractal = generate_fractal(size, h_val);
+
+    this->map = new double*[size];
+    for (int i = 0; i < size; i++){
+        this->map[i] = new double[size];
+    }
+
+    this->range_center = params["SIDE_LENGTH"]/2 ;
+    this->gradient_strength = 1.0;
+    this->fractal_weight = 0.3;
+
+    this->shift(0.5);
 }
 
-double EnvFactor::get_env_factor_value(double x, double y){
-    int res = params["ENV_FACTOR_RESOLUTION"];
+void EnvFactor::shift(double center_of_range){
+    int n = int(params["SIDE_LENGTH"]);
+
+    double center_row = n*center_of_range;
+
+    double E_C = 1.0;
+    double dist, E_L, val;
+    double F = this->fractal_weight;
+    double G = this->gradient_strength;
+
+    double max = 0.0;
+    double min = 1.0;
+
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            dist = double(center_row - i) / double(n);
+            E_L = E_C - G*abs(dist);
+            val = E_L + F*(this->fractal[i][j]);
+
+            if (val > max){
+                max = val;
+            }
+            if (val < min){
+                min = val;
+            }
+            this->map[i][j] = val;
+        }
+    }
+
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            this->map[i][j] = double(this->map[i][j] - min)/double(max-min);
+        }
+    }
+}
+
+double EnvFactor::get_env_factor_value(int x, int y){
+    /*int res = params["ENV_FACTOR_RESOLUTION"];
     double side_len = params["SIDE_LENGTH"];
     int x_cell = int(double(res)*(x/side_len));
     int y_cell = int(double(res)*(y/side_len));
-    return this->map[x_cell][y_cell];
+    return this->map[x_cell][y_cell];*/
+    return this->map[x][y];
 }
 
 double EnvFactor::get_cell_value(int x, int y){
@@ -82,6 +130,9 @@ double** EnvFactor::generate_fractal(int size, double H_VAL){
         d = d/2;
     }
 
+
+    return tmp;
+    /*
     double** grid = new double*[n];
     for (int i = 0; i < n; i++){
         grid[i] = new double[n];
@@ -115,7 +166,7 @@ double** EnvFactor::generate_fractal(int size, double H_VAL){
     }
     delete[] tmp;
 
-    return grid;
+    return grid;*/
 }
 
 double EnvFactor::f4(double delta, double a, double b, double c, double d){

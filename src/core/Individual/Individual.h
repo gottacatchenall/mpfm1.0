@@ -29,12 +29,8 @@ class Individual{
         double get_locus(int locus, int haplotype);
 
         void migrate();
-        std::vector<Patch*> stochastic_foraging();
-        Patch* find_nearest_patch_to_crit(double crit_dist);
-        Patch* pick_best_patch(std::vector<Patch*> options);
 
-        double calc_pref(Patch* patch);
-        void calc_fitness();
+        double calc_fitness(Patch* patch_i);
         void gen_haplotype(Individual* parent, int offspring_haplo);
         std::vector<int> get_crossing_over_points();
 

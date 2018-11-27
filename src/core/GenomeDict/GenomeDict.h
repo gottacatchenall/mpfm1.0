@@ -14,7 +14,7 @@ class GenomeDict{
 
         std::vector<int> chromo_map;
         std::vector<std::vector<int>> fitness_loci;
-        std::vector<std::vector<int>> pref_loci;
+        double* selection_strengths;
         std::vector<int> neutral_loci;
 };
 

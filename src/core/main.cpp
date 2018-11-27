@@ -3,6 +3,8 @@
 #include "Individual.h"
 #include "AlleleTracker.h"
 #include "MigrationTracker.h"
+#include "EnvFactor.h"
+#include "GenomeDict.h"
 
 int generation;
 MigrationTracker* migration_tracker;
@@ -18,8 +20,27 @@ int main(int argc, char* argv[]){
 
     int num_gen = params["NUM_GENERATIONS"];
     int census_freq = params["CENSUS_FREQ"];
+    //int ef_freq = params["MIGRATION_SAMPLE_FREQ"];
+
+    bool static_env_factors = params["ENV_FACTORS_STATIC"];
+    bool col = params["PATCH_COLONIZATION"];
+    double col_prob = params["PATCH_COLONIZATION_PROB"];
+    bool ext = params["PATCH_EXTINCTION"];
+    double ext_prob = params["PATCH_EXTINCTION_PROB"];
+
 
     for (generation = 0; generation <= num_gen; generation++){
+        if (!static_env_factors){
+            shift_environment();
+        }
+
+        if (col){
+            colonization(col_prob);
+        }
+        if (ext){
+            extinction(ext_prob);
+        }
+
         migration();
         selection();
         check_dispersal();
@@ -28,11 +49,8 @@ int main(int argc, char* argv[]){
 
         if (generation % census_freq == 0 && generation > 0){
             census();
+            write_efs();
         }
-
-        // env factor stochasticity
-        // patch k stochasticity
-
 
         update_progress_bar(generation);
         migration_tracker->reset_migration_matrix();
@@ -51,10 +69,6 @@ void migration(){
 
 void selection(){
     for (Patch* patch_i: *patches){
-        std::vector<Individual*> indivs = patch_i->get_all_individuals();
-        for (Individual* indiv: indivs){
-            indiv->calc_fitness();
-        }
         patch_i->selection();
     }
 }
@@ -62,7 +76,6 @@ void selection(){
 void logging(){
     for (Patch* patch_i: *patches){
         if (patch_i->get_size() > 0){
-            log_population(patch_i);
             log_eff_migration(patch_i);
             log_patch(patch_i);
             for (Patch* patch_j: *patches){
@@ -73,7 +86,17 @@ void logging(){
             }
         }
     }
-    log_fst(get_fst());
+    get_fst();
+}
+
+
+void write_efs(){
+    int size = params["SIDE_LENGTH"];
+    for (int i = 0; i < size; i++){
+        for (int j = 0; j < size; j++){
+            log_env_factors(i,j);
+        }
+    }
 }
 
 void mating(){
@@ -138,16 +161,43 @@ void census(){
     al_tracker.construct_allele_table();
     for (Patch* patch_i: *patches){
         al_tracker.get_ld(patch_i->get_id(), "fitness");
-        al_tracker.get_ld(patch_i->get_id(), "pref");
         al_tracker.get_ld(patch_i->get_id(), "neutral");
         al_tracker.get_global_ld("fitness");
-        al_tracker.get_global_ld("pref");
         al_tracker.get_global_ld("neutral");
     }
 }
 
+void shift_environment(){
+    int num_gen = params["NUM_GENERATIONS"];
 
-std::vector<double> get_fst(){
+    double prop_shifted = 0.5 + (0.5 * double(generation)/double(num_gen));
+
+
+    for (EnvFactor* ef : *envFactors){
+        ef->shift(prop_shifted);
+    }
+}
+
+void colonization(double prob){
+    /*for (Patch* patch_i : *patches){
+        if (real_uniform(0.0, 1.0, main_generator) < prob){
+
+        }
+    }*/
+}
+
+void extinction(double prob){
+
+
+
+    if (real_uniform(0.0, 1.0, main_generator) < prob){
+        // exp
+        //exp(-1
+    }
+}
+
+
+void get_fst(){
     std::vector<int> pooled_heterozygos_ct_by_locus;
     int n_loci = params["NUM_OF_LOCI"];
 
@@ -189,37 +239,42 @@ std::vector<double> get_fst(){
         }
     }
 
-    std::vector<double> f_st;
+    double hT;
+    double hS;
+
     int n_total = get_total_population_size();
-    if (n_total > 0){
-        double hT;
-        double hS;
+
+    std::vector<int> neut_loci = genome_dict->neutral_loci;
+    std::vector<std::vector<int>> fit_loci = genome_dict->fitness_loci;
 
 
-        for (int l = 0; l < n_loci; l++){
-            assert(n_patches);
-            assert(n_total);
 
+    for (int l : neut_loci){
+        hS = double(hS_sum[l]) / double(n_patches);
+        hT = double(pooled_heterozygos_ct_by_locus[l])/double(n_total);
+        if (hT > 0){
+            double FST = (hT - hS) / hT;
+            log_fst(l, FST, "neutral");
+        }
+        else{
+            log_fst(l, 1.0, "neutral");
+        }
+    }
+
+    for (std::vector<int> fitness_loci_this_ef : fit_loci){
+        for (int l : fitness_loci_this_ef){
             hS = double(hS_sum[l]) / double(n_patches);
             hT = double(pooled_heterozygos_ct_by_locus[l])/double(n_total);
             if (hT > 0){
                 double FST = (hT - hS) / hT;
-                f_st.push_back(FST);
+                log_fst(l, FST, "fitness");
             }
             else{
-                f_st.push_back(1.0);
+                log_fst(l, 1.0, "fitness");
             }
         }
     }
 
-    else{
-        for (int l = 0; l < n_loci; l++){
-            f_st.push_back(0.0);
-        }
-    }
-
-
-    return f_st;
 }
 
 int get_total_population_size(){

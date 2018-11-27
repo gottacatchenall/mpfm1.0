@@ -78,13 +78,12 @@ void Individual::migrate(){
         return;
     }
 
-    //std::vector<Patch*> delta = this->stochastic_foraging();
-    //Patch* new_patch = pick_best_patch(delta);
+
+    int size = params["SIDE_LENGTH"];
     Patch* best_patch = this->patch;
-    double distance_strength = 0.01;
+    double distance_strength = 1.0/(size*size);
     double pref, dist, decay, score;
     int current_patch_id = this->patch->get_id();
-
 
     int mean_num_patches = params["MEAN_NUM_PATCHES_FORAGED"];
     int num_of_patches = poisson(mean_num_patches, main_generator);
@@ -97,24 +96,30 @@ void Individual::migrate(){
         avail_patches.push_back((*patches)[index]);
     }
 
-
-
-    double best_score =  this->calc_pref(this->patch);;
+    double best_score =  this->calc_fitness(this->patch);
+    double w = best_score;
     for (Patch* patch_i: avail_patches){
         dist = abs(dist_matrix[current_patch_id][patch_i->get_id()]);
         decay = exp(-1.0*distance_strength*(dist)*(dist));
 
-        pref = this->calc_pref(patch_i);
+        pref = this->calc_fitness(patch_i);
 
         score = pref*decay;
 
         if (score > best_score){
             best_score = score;
             best_patch = patch_i;
+            w = pref;
         }
     }
 
+    this->w = w;
+
     if (best_patch != this->patch){
+        if (best_patch->get_size() == 0){
+            log_colonization(best_patch->get_id());
+        }
+
         migration_tracker->note_attempted_migration(this->patch, best_patch);
         this->has_migrated = true;
         this->patch->remove_individual(this);
@@ -125,108 +130,10 @@ void Individual::migrate(){
     }
 }
 
-std::vector<Patch*> Individual::stochastic_foraging(){
-    int mean_dist = params["MEAN_MIGRATION_DIST"];
-    int mean_num_patches = params["MEAN_NUM_PATCHES_FORAGED"];
-
-    std::vector<Patch*> potential_patches;
-
-    potential_patches.push_back(this->patch);
-
-    int num_of_patches = poisson(mean_num_patches, main_generator);
-
-    for (int i = 0; i < num_of_patches; i++){
-        double crit_dist = poisson(mean_dist, main_generator);
-        potential_patches.push_back(find_nearest_patch_to_crit(crit_dist));
-    }
-
-    std::set<Patch*> s( potential_patches.begin(), potential_patches.end() );
-    std::vector<Patch*> potential_patches_unique;
-    potential_patches_unique.assign( s.begin(), s.end() );
-
-    return potential_patches_unique;
-}
-
-Patch* Individual::find_nearest_patch_to_crit(double crit_dist){
-    double min = 100;
-    double dist_from_crit;
-    Patch* best;
-
-    int id = this->patch->get_id();
-    int id2;
-
-    for (Patch* patch_j : *patches){
-        id2 = patch_j->get_id();
-        if (this->patch != patch_j){
-            dist_from_crit = dist_matrix[id][id2] - crit_dist;
-            if (dist_from_crit < min){
-                min = dist_from_crit;
-                best = patch_j;
-            }
-        }
-    }
-
-    return best;
-}
-
-Patch* Individual::pick_best_patch(std::vector<Patch*> options){
-    Patch* best = this->patch;
-
-    double max_pref = 0;
-    double pref;
-
-    for (Patch* patch_i : options){
-        pref = this->calc_pref(patch_i);
-        if (pref > max_pref){
-            best = patch_i;
-            max_pref = pref;
-        }
-    }
-
-    return best;
-}
-
-double Individual::calc_pref(Patch* patch){
-    int n_ef = params["NUM_ENV_FACTORS"];
-    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
-    double sigma_pref = params["SIGMA_PREF"];
-
-
-    int locus;
-    double theta_i, y_i, s_i, p_i;
-
-    double p = 1.0;
-    double s_max_i = 0.1;
-    double draw;
-    std::vector<double> theta = this->patch->get_env_factors();
-    for (int i = 0; i < n_ef; i++){
-        theta_i = theta[i];
-
-        for (int j = 0; j < n_loci_per_ef; j++ ){
-            locus = genome_dict->fitness_loci[i][j];
-
-            y_i = this->get_locus(locus, 0);
-            draw = normal((y_i - theta_i), sigma_pref , main_generator );
-            s_i = s_max_i * draw;
-            p_i = 1.0 + s_i;
-            p = p * p_i;
-
-            y_i = this->get_locus(locus, 1);
-            draw = normal((y_i - theta_i), sigma_pref , main_generator);
-            s_i = s_max_i * draw;
-            p_i = 1.0 + s_i;
-            p = p * p_i;
-        }
-    }
-
-    return p;
-}
-
-
 // =========================================================================
 // Selection
 // =========================================================================
-void Individual::calc_fitness(){
+double Individual::calc_fitness(Patch* patch_i){
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
     double sigma_s = params["SIGMA_SELECTION"];
@@ -238,29 +145,31 @@ void Individual::calc_fitness(){
     double s_max_i = 0.1;
 
     double draw;
+    double locus_weight;
 
-    std::vector<double> theta = this->patch->get_env_factors();
+    std::vector<double> theta = patch_i->get_env_factors();
     for (int i = 0; i < n_ef; i++){
         theta_i = theta[i];
-
         for (int j = 0; j < n_loci_per_ef; j++ ){
             locus = genome_dict->fitness_loci[i][j];
 
+            locus_weight = genome_dict->selection_strengths[locus];
+
             x_i = this->get_locus(locus, 0);
-            draw = normal((x_i - theta_i), sigma_s, main_generator);
+            draw = locus_weight*normal((x_i - theta_i), sigma_s, main_generator);
             s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
 
             x_i = this->get_locus(locus, 1);
-            draw = normal((x_i - theta_i), sigma_s, main_generator);
+            draw = locus_weight*normal((x_i - theta_i), sigma_s, main_generator);
             s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
         }
     }
 
-    this->w = w;
+    return w;
 }
 
 double Individual:: get_fitness(){

@@ -13,31 +13,31 @@ GenomeDict::GenomeDict(){
     }
 
 
-    int n_unique_indecies = 2*n_loci_per_ef*n_ef;
+    int n_unique_indecies = n_loci_per_ef*n_ef;
     int* uniq_perm = generate_perm_with_uniq_ints(n_unique_indecies, n_loci);
 
     int ind = 0;
+    double weight;
+
+    this->selection_strengths = new double[n_loci];
+    for (int i = 0; i < n_loci; i++){
+        this->selection_strengths[i] = 0.0;
+    }
+
 
     for (int i = 0; i < n_ef; i++){
         std::vector<int> tmp_vec;
         for (int j = 0; j < n_loci_per_ef; j++){
             int val = uniq_perm[ind];
-            log_locus(val, i, "fitness");
+            weight = real_uniform(0.0, 1.0, genome_generator);
+            this->selection_strengths[val] = (weight);
+
+            log_locus(val, i, weight, "fitness");
             tmp_vec.push_back(uniq_perm[ind]);
             ind++;
         }
-        this->fitness_loci.push_back(tmp_vec);
-    }
 
-    for (int i = 0; i < n_ef; i++){
-        std::vector<int> tmp_vec;
-        for (int j = 0; j < n_loci_per_ef; j++){
-            int val = uniq_perm[ind];
-            log_locus(val, i, "pref");
-            tmp_vec.push_back(val);
-            ind++;
-        }
-        this->pref_loci.push_back(tmp_vec);
+        this->fitness_loci.push_back(tmp_vec);
     }
 
     for (int i = 0; i < n_loci; i++){
@@ -49,7 +49,7 @@ GenomeDict::GenomeDict(){
         }
         if (neut){
             this->neutral_loci.push_back(i);
-            log_locus(i, -1, "neutral");
+            log_locus(i, -1, 0, "neutral");
         }
     }
 

@@ -5,7 +5,7 @@
 
 int Patch::id_counter = 0;
 
-Patch::Patch(double x, double y, double K){
+Patch::Patch(int x, int y, double K){
     this->x = x;
     this->y = y;
     this->K = K;
@@ -78,6 +78,7 @@ void Patch::selection(){
     int K = this->K;
     int n = indivs.size();
 
+
     for (Individual* indiv : indivs){
         double fitness = double(indiv->get_fitness())/double(max_fitness);
         double k_prime = double(K * fitness);
@@ -94,6 +95,13 @@ void Patch::selection(){
             delete indiv;
         }
     }
+
+    int n_now = indivs.size();
+
+    if (n > 0 && n_now <= 1){
+        log_extinction(this->get_id());
+    }
+
 }
 
 double Patch::beverton_holt_prob(int n, double k_prime){

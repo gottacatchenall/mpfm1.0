@@ -24,8 +24,17 @@ void selection();
 void mating();
 void logging();
 void census();
+
+void write_efs();
+
+void shift_environment();
+void colonization(double prob);
+void extinction(double prob);
+
 void update_progress_bar(int gen);
 void check_dispersal();
+
+
 // init
 void read_params_file();
 void initialize_rand_generators(int random_seed);
@@ -51,23 +60,28 @@ int get_total_population_size();
 
 // Logging
 void log_patch(Patch* patch_i);
-void log_fst(std::vector<double> f_st);
+void log_fst(int locus, double fst, std::string type);
 void log_eff_migration(Patch* patch_i);
 void log_attempted_migration(Patch* patch_i, Patch* patch_j);
 void log_successful_migration(Patch* patch_i, Patch* patch_j);
 void log_population(Patch* patch_i);
-void log_locus(int l, int ef,std::string type);
+void log_locus(int l, int ef, double strength, std::string type);
 //void log_linkage(int patch_num, int l1, double al1,  int l2, double al2, double D, std::string type);
 //void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type);
 void log_linkage(int patch_num, int l1, int l2, double D, std::string type);
 void log_global_linkage(int l1, int l2, double D, std::string type);
-void log_allele_freq(int patch_num, int locus, double allele_val, double freq);
+void log_allele_freq(int patch_num, int locus, double allele_val, double freq, std::string type);
 void log_env_factors(int x, int y);
+
+void log_colonization(int patch_num);
+void log_extinction(int patch_num);
+
+
 double mean_w(Patch* patch_i);
 double sd_w(Patch* patch_i, double w_bar);
 bool is_file_empty(std::string path);
 
-std::vector<double> get_fst();
+void get_fst();
 
 
 // Random Gen
