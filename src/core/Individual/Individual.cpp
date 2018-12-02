@@ -73,17 +73,26 @@ double Individual::get_locus(int locus, int haplotype){
 // Migration
 // =========================================================================
 
-void Individual::migrate(){
+void Individual::migrate(Patch* patch){
+    this->patch = patch;
+    migration_tracker->note_attempted_migration(this->patch_born_in, patch);
+    if (patch != this->patch_born_in){
+        this->has_migrated = true;
+    }
+}
+
+void Individual::migrate_old(){
     if (this->has_migrated){
         return;
     }
 
-
-    int size = params["SIDE_LENGTH"];
+    //std::vector<Patch*> delta = this->stochastic_foraging();
+    //Patch* new_patch = pick_best_patch(delta);
     Patch* best_patch = this->patch;
-    double distance_strength = 1.0/(size*size);
+    double distance_strength = 0.01;
     double pref, dist, decay, score;
     int current_patch_id = this->patch->get_id();
+
 
     int mean_num_patches = params["MEAN_NUM_PATCHES_FORAGED"];
     int num_of_patches = poisson(mean_num_patches, main_generator);
@@ -96,33 +105,28 @@ void Individual::migrate(){
         avail_patches.push_back((*patches)[index]);
     }
 
-    double best_score =  this->calc_fitness(this->patch);
-    double w = best_score;
+
+
+    double best_score =  this->calc_pref(this->patch);;
     for (Patch* patch_i: avail_patches){
         dist = abs(dist_matrix[current_patch_id][patch_i->get_id()]);
         decay = exp(-1.0*distance_strength*(dist)*(dist));
 
-        pref = this->calc_fitness(patch_i);
+        pref = this->calc_pref(patch_i);
 
         score = pref*decay;
 
         if (score > best_score){
             best_score = score;
             best_patch = patch_i;
-            w = pref;
         }
     }
 
-    this->w = w;
-
     if (best_patch != this->patch){
-        if (best_patch->get_size() == 0){
-            log_colonization(best_patch->get_id());
-        }
-
         migration_tracker->note_attempted_migration(this->patch, best_patch);
         this->has_migrated = true;
         this->patch->remove_individual(this);
+        //best_patch->add_to_migrant_queue(this);
         best_patch->add_individual(this);
     }
     else{
@@ -133,16 +137,18 @@ void Individual::migrate(){
 // =========================================================================
 // Selection
 // =========================================================================
-double Individual::calc_fitness(Patch* patch_i){
+double Individual::calc_pref(Patch* patch_i){
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
     double sigma_s = params["SIGMA_SELECTION"];
+
+    double sel_strength = params["SELECTION_STRENGTH"];
 
     int locus;
     double theta_i, x_i, s_i, w_i;
 
     double w = 1.0;
-    double s_max_i = 0.1;
+    double s_max_i = -1*sel_strength;
 
     double draw;
     double locus_weight;
@@ -156,13 +162,13 @@ double Individual::calc_fitness(Patch* patch_i){
             locus_weight = genome_dict->selection_strengths[locus];
 
             x_i = this->get_locus(locus, 0);
-            draw = locus_weight*normal((x_i - theta_i), sigma_s, main_generator);
+            draw = abs(locus_weight*normal((x_i - theta_i), sigma_s, main_generator));
             s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
 
             x_i = this->get_locus(locus, 1);
-            draw = locus_weight*normal((x_i - theta_i), sigma_s, main_generator);
+            draw = abs(locus_weight*normal((x_i - theta_i), sigma_s, main_generator));
             s_i = s_max_i * draw;
             w_i = 1.0 + s_i;
             w = w * w_i;
@@ -172,9 +178,60 @@ double Individual::calc_fitness(Patch* patch_i){
     return w;
 }
 
+
+
+void Individual::calc_fitness(){
+    int n_ef = params["NUM_ENV_FACTORS"];
+    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
+    double sigma_s = params["SIGMA_SELECTION"];
+    double sel_strength = params["SELECTION_STRENGTH"];
+
+    int locus;
+    double theta_i, x_i, s_i, w_i;
+
+    double w = 1.0;
+    double s_max_i = -1*sel_strength;
+
+    double draw;
+    double locus_weight;
+
+    std::vector<double> theta = this->patch->get_env_factors();
+    for (int i = 0; i < n_ef; i++){
+        theta_i = theta[i];
+        for (int j = 0; j < n_loci_per_ef; j++ ){
+            locus = genome_dict->fitness_loci[i][j];
+
+            locus_weight = genome_dict->selection_strengths[locus];
+
+            x_i = this->get_locus(locus, 0);
+            draw = abs(locus_weight*normal((x_i - theta_i), sigma_s, main_generator));
+            s_i = s_max_i * draw;
+            w_i = 1.0 + s_i;
+            w = w * w_i;
+
+            x_i = this->get_locus(locus, 1);
+            draw = abs(locus_weight*normal((x_i - theta_i), sigma_s, main_generator));
+            s_i = s_max_i * draw;
+            w_i = 1.0 + s_i;
+            w = w * w_i;
+        }
+    }
+
+    this->w = w;
+}
+
 double Individual:: get_fitness(){
     return this->w;
 }
+
+void Individual::set_exp_num_off(double val){
+    this->exp_num_off = val;
+}
+double Individual::get_exp_num_off(){
+    return this->exp_num_off;
+}
+
+
 
 int Individual::get_sex(){
     return this->sex;

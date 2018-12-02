@@ -11,6 +11,7 @@ class Patch{
         int x;
         int y;
         double K;
+        std::vector<Individual*> migrant_queue;
         std::vector<Individual*>* individuals;
         std::vector<Individual*>* next_gen;
         std::vector<double> env_factors;
@@ -29,6 +30,10 @@ class Patch{
         void selection();
         double beverton_holt_prob(int n, double k_prime);
         std::vector<std::vector<Individual*>> split_by_sex();
+
+        void add_to_migrant_queue(Individual* indiv);
+        void add_migrants_to_patch();
+        std::vector<Individual*> pick_n_random_indivs(int n);
 
         void add_to_next_gen(Individual* indiv);
         void replace_current_gen();

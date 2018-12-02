@@ -54,11 +54,6 @@ void initialize_patches(){
     double k_sigma = params["PATCH_K_SD"];
     double side_len = params["SIDE_LENGTH"];
 
-    // TODO
-        // fix this ffs
-
-
-
     patches = new std::vector<Patch*>;
 
     for (int i = 0; i < n_patches; i++){
@@ -99,15 +94,13 @@ void initialize_genome_dict(){
 
 void initialize_individuals(){
     double k;
-    int n_indiv, i;
+    int i;
+    int n_indiv;
     Individual* indiv_i;
 
     for (Patch* patch_i : *patches){
         k = patch_i->get_K();
-        std::uniform_int_distribution<int> n_indiv_dis(0, int(k));
-        n_indiv = n_indiv_dis(*patch_generator);
-
-        for (i = 0; i < n_indiv; i++){
+        for (i = 0; i < k; i++){
             indiv_i = new Individual(patch_i, false);
             patch_i->add_individual(indiv_i);
         }
@@ -228,7 +221,8 @@ std::vector<std::vector<double>> gen_alleles(){
         alleles.push_back(std::vector<double>());
         int n_alleles = expected_num_alleles();
         for (int i = 0; i < n_alleles; i++){
-            alleles[l].push_back(real_uniform(0.0, 1.0, main_generator));
+            //alleles[l].push_back(1.0);
+            alleles[l].push_back(real_uniform(0, 1.0, main_generator));
         }
     }
     return alleles;

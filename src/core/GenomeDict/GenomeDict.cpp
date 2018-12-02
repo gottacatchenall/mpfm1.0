@@ -24,12 +24,15 @@ GenomeDict::GenomeDict(){
         this->selection_strengths[i] = 0.0;
     }
 
+    double MEAN_LOCUS_WEIGHT = params["MEAN_LOCUS_WEIGHT"];
+    printf("using fixed weight at each fitness locus!\n");
 
     for (int i = 0; i < n_ef; i++){
         std::vector<int> tmp_vec;
         for (int j = 0; j < n_loci_per_ef; j++){
             int val = uniq_perm[ind];
-            weight = real_uniform(0.0, 1.0, genome_generator);
+            //weight = real_uniform(0.0, 1.0, genome_generator);
+            weight = MEAN_LOCUS_WEIGHT;
             this->selection_strengths[val] = (weight);
 
             log_locus(val, i, weight, "fitness");

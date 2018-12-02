@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import csv, argparse, os, pandas
-
+import networkx as nx
 
 # =============================================
 #  Globals, etc.
@@ -49,7 +49,7 @@ def init_files(folder):
     with open(dem, 'a') as file:
         file.write(demography_csv_header)
     with open(dyn, 'a') as file:
-        file.write(demography_csv_header)
+        file.write(dynamics_csv_header)
     with open(meta, 'a') as file:
         file.write('run_id,')
 
@@ -101,6 +101,48 @@ def get_num_fixed(data):
         s += data.query('patch_num == ' + str(patch) + ' & frequency == 1.0').shape[0]
 
     return float(s)/float(len(patches))
+
+def get_graph_stats(data):
+    gen0 = data.query('generation == 0')
+
+    def f(x):
+        return np.exp(-1*x^2)
+
+    patches = []
+
+    for index,row in gen0.iterrows():
+        x,y = row['x'], row['y']
+        patches.append((x,y))
+
+    n_patches = len(patches)
+
+    mat = np.zeros((n_patches, n_patches))
+
+    for i, (x,y) in enumerate(patches):
+        for j, (x2,y2) in enumerate(patches):
+            mat[i,j] = np.sqrt((x2-x)*(x2-x) + (y2-y)*(y2-y))
+
+    incidence_matrix = np.zeros((n_patches,n_patches))
+
+
+    for i in range(n_patches):
+        for j in range(n_patches):
+            incidence_matrix[i,j] = f(mat[i,j])
+
+
+    dispersal_probs = np.zeros((n_patches, n_patches))
+    G = nx.Graph()
+
+
+    for i in range(n_patches):
+        row_sum = 0
+        for j in range(n_patches):
+            row_sum += incidence_matrix[i,j]
+        for j in range(n_patches):
+            dispersal_probs[i,j] = incidence_matrix[i,j] / row_sum
+            G.add_edge(i,j, w=dispersal_probs[i,j])
+
+    centrality =  nx.eigenvector_centrality(G, weight='w')
 
 
 def write_demography(run_id, source_dir_path, target_dir_path):

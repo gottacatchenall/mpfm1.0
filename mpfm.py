@@ -2,7 +2,8 @@
 
 from src.start_run import start_run, print_info, print_run
 from src.parse_args import setup_arg_parser, read_param_table, read_batch_file
-import os
+import os, copy
+import numpy as np
 
 def main():
     this_dir = os.path.abspath('.')
@@ -14,10 +15,21 @@ def main():
 
     if (args['BATCH']):
         param_list = read_batch_file(args['BATCH'][0])
+
         for i,params in enumerate(param_list):
-            os.chdir(this_dir)
-            print_run(params,i)
-            start_run(params)
+            num_rep = int(params['NUM_REPLICATES'])
+
+            for rep in range(num_rep):
+                this_rep_params = copy.deepcopy(params)
+                this_rep_params["DATA_DIRECTORY"] = params["DATA_DIRECTORY"] + str(rep)
+                this_rep_params["RANDOM_SEED"] = np.random.randint(0, 100000000)
+                this_rep_params["EF_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                this_rep_params["PATCH_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                this_rep_params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
+
+                os.chdir(this_dir)
+                print_run(this_rep_params, i, rep)
+                start_run(this_rep_params)
     else:
         params = {}
         for param in param_table:

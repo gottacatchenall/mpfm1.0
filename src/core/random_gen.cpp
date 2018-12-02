@@ -35,7 +35,7 @@ double normal(double mu, double sigma, std::mt19937* gen){
 }
 
 
-double poisson(int lambda, std::mt19937* gen){
+double poisson(double lambda, std::mt19937* gen){
     std::poisson_distribution<int> p_dis(lambda);
     return p_dis(*gen);
 }

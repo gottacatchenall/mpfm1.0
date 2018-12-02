@@ -7,9 +7,10 @@ import subprocess
 import time
 
 
-def print_run(params, run_num):
+def print_run(params, run_num, rep_num):
     print('\t--------------------------------------------------------------------')
     print('\tRUN NUMBER: %s' % run_num)
+    print('\tREPLICATE NUMBER: %s' % rep_num)
     print('\tDATA_DIRECTORY: %s' % params['DATA_DIRECTORY'])
 
 

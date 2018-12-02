@@ -17,6 +17,7 @@ class Individual{
     public:
         bool has_migrated;
         double parent_was_migrant;
+        double exp_num_off;
 
         Individual(Patch* patch, bool parent_was_migrant);
         ~Individual();
@@ -28,9 +29,14 @@ class Individual{
         void set_locus(int locus, int haplotype, double val);
         double get_locus(int locus, int haplotype);
 
-        void migrate();
+        void migrate(Patch* patch);
+        void migrate_old();
 
-        double calc_fitness(Patch* patch_i);
+        void set_exp_num_off(double val);
+        double get_exp_num_off();
+
+        void calc_fitness();
+        double calc_pref(Patch* patch_i);
         void gen_haplotype(Individual* parent, int offspring_haplo);
         std::vector<int> get_crossing_over_points();
 

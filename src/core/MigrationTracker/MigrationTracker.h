@@ -6,8 +6,9 @@
 
 class MigrationTracker{
 	private:
-		double** attempted_migration_matrix;
-		double** successful_migration_matrix;
+		std::vector<std::vector<double>> attempted_migration_matrix;
+		std::vector<std::vector<double>> successful_migration_matrix;
+		std::vector<std::vector<double>> dispersal_kernal;
 	public:
 		MigrationTracker();
 		void note_attempted_migration(Patch* from, Patch* to);
@@ -17,6 +18,7 @@ class MigrationTracker{
 		double get_emigration(Patch* from, Patch* to);
 		double get_immigration(Patch* from, Patch* to);
 		double get_successful_migration(Patch* from, Patch* to);
+		std::vector<double> get_dispersal_row(int num);
 		void reset_migration_matrix();
 };
 

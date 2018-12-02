@@ -15,9 +15,7 @@ std::vector<std::vector<double>> dist_matrix;
 GenomeDict* genome_dict;
 
 int main(int argc, char* argv[]){
-
     init();
-
     int num_gen = params["NUM_GENERATIONS"];
     int census_freq = params["CENSUS_FREQ"];
     //int ef_freq = params["MIGRATION_SAMPLE_FREQ"];
@@ -59,15 +57,50 @@ int main(int argc, char* argv[]){
 }
 
 void migration(){
+
+/*        for (Patch* patch_i: *patches){
+            std::vector<Individual*> indivs = patch_i->get_all_individuals();
+            for (Individual* indiv: indivs){
+                indiv->migrate_old();
+            }
+        }*/
+
+    std::vector<Individual*> indivs;
     for (Patch* patch_i: *patches){
-        std::vector<Individual*> indivs = patch_i->get_all_individuals();
-        for (Individual* indiv: indivs){
-            indiv->migrate();
+        std::vector<double> row = migration_tracker->get_dispersal_row(patch_i->get_id());
+
+
+        int n_patches = row.size();
+        int n_this_patch = patch_i->get_size();
+        int this_patch_id = patch_i->get_id();
+
+        for (int j = 0; j < n_patches; j++){
+            if (j != this_patch_id){
+                Patch* patch_j = (*patches)[j];
+                double prop = row[j];
+                int n_i_to_j = int(prop * n_this_patch);
+                indivs = patch_i->pick_n_random_indivs(n_i_to_j);
+                for (Individual* indiv_i: indivs){
+                    patch_j->add_to_migrant_queue(indiv_i);
+                    indiv_i->migrate(patch_j);
+                }
+            }
         }
+    }
+
+    for (Patch* patch_i: *patches){
+        patch_i->add_migrants_to_patch();
     }
 }
 
 void selection(){
+    for (Patch* patch_i: *patches){
+        std::vector<Individual*> indivs = patch_i->get_all_individuals();
+        for (Individual* indiv: indivs){
+            indiv->calc_fitness();
+        }
+    }
+
     for (Patch* patch_i: *patches){
         patch_i->selection();
     }
@@ -119,7 +152,29 @@ void mating(){
         if (num_males > 0 && num_females > 0){
                 int m_index, f_index;
                 bool parent_migrated;
-                int n_off = mean_off_per_female*num_females;
+
+                for (int i = 0; i < num_females; i++){
+                    random_female = females[i];
+                    m_index = int_uniform(0, num_males-1, main_generator);
+                    random_male = males[m_index];
+
+                    parent_migrated = (random_male->has_migrated || random_female->has_migrated);
+
+                    double n_off_mean = (random_male->get_exp_num_off() + random_female->get_exp_num_off())/double(2);
+
+                    int n_off = poisson(n_off_mean, main_generator);
+
+                    for (int off = 0; off < n_off; off++){
+                        offspring = new Individual(patch_i, parent_migrated);
+                        offspring->gen_haplotype(random_female, 0);
+                        offspring->gen_haplotype(random_male, 1);
+                        patch_i->add_to_next_gen(offspring);
+                    }
+
+
+                }
+
+                /*
                 for (int i = 0; i < n_off; i++){
                     m_index = int_uniform(0, num_males-1, main_generator);
                     f_index = int_uniform(0, num_females-1, main_generator);
@@ -142,7 +197,7 @@ void mating(){
                     #endif
 
                     patch_i->add_to_next_gen(offspring);
-                }
+                }*/
         }
         patch_i->replace_current_gen();
     }

@@ -88,7 +88,7 @@ void get_fst();
 double beta_dist(double alpha, double beta, std::mt19937* gen);
 double std_normal(std::mt19937* gen);
 double normal(double mu, double sigma, std::mt19937* gen);
-double poisson(int lambda, std::mt19937* gen);
+double poisson(double lambda, std::mt19937* gen);
 int int_uniform(int a, int b, std::mt19937* gen);
 double real_uniform(double a, double b, std::mt19937* gen);
 
