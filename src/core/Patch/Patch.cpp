@@ -168,6 +168,9 @@ void Patch::add_to_next_gen(Individual* indiv){
 }
 
 void Patch::replace_current_gen(){
+    for (Individual* indiv: *(this->individuals)){
+        delete indiv;
+    }
     delete this->individuals;
     this->individuals = this->next_gen;
     this->next_gen = new std::vector<Individual*>;
