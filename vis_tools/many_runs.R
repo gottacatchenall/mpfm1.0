@@ -16,9 +16,18 @@
   data <- merge(data, metadata, by="run_id")
 }
 
-ggplot(subset(data, neutral == 1), aes(generation, global_ld_mean, group=(run_id), color = as.factor(SELECTION_STRENGTH))) + geom_point() + geom_line()
+ggplot(subset(data, fitness == 0), aes(generation, global_ld_mean, group=(run_id), color=(MEAN_LOCUS_WEIGHT))) + geom_point() + geom_smooth(method="lm")
+
+ggplot(subset(data), aes(generation, fst_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
+
+ld_model <- (lm(global_ld_mean ~ generation*MEAN_LOCUS_WEIGHT, data = data))
 
 
-ggplot(data, aes(generation, eff_mig_mean, color=as.factor(run_id), group=as.factor(run_id))) + geom_smooth() + geom_point()
+
+ggplot(subset(data), aes(generation, prop_of_k_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
+
+
+
+#ggplot(data, aes(generation, eff_mig_mean, color=as.factor(run_id), group=as.factor(run_id))) + geom_smooth() + geom_point()
 
 

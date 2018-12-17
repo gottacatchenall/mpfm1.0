@@ -7,8 +7,8 @@ ggplot(mpg, aes(cty, hwy, color = class)) + geom_density2d()
 library(vegan)
 library(ggplot2)
 patch_data <- read.csv('patches.csv')
-att_migration <- read.csv('attempted_migration.csv')
-success_migration <- read.csv('successful_migration.csv')
+#att_migration <- read.csv('attempted_migration.csv')
+#success_migration <- read.csv('successful_migration.csv')
 eff_migration <- read.csv('eff_migration.csv')
 linkage <- read.csv('linkage.csv')
 gbl_linkage <- read.csv('global_linkage.csv')
@@ -22,10 +22,10 @@ gbl_linkage$D = abs(gbl_linkage$D)
 linkage$patch_num = factor(linkage$patch_num)
 alleles$patch_num <- factor(alleles$patch_num)
 eff_migration$patch_num <- factor(eff_migration$patch_num)
-success_migration$patch_from_num <- factor(success_migration$patch_from_num)
-success_migration$patch_to_num <- factor(success_migration$patch_to_num)
-att_migration$patch_from_num <- factor(att_migration$patch_from_num)
-att_migration$patch_to_num <- factor(att_migration$patch_to_num)
+#success_migration$patch_from_num <- factor(success_migration$patch_from_num)
+#success_migration$patch_to_num <- factor(success_migration$patch_to_num)
+#att_migration$patch_from_num <- factor(att_migration$patch_from_num)
+#att_migration$patch_to_num <- factor(att_migration$patch_to_num)
 }
 run_name <- 'N=20 K=300, H=0.2, dynamic ef,'
 
@@ -33,7 +33,8 @@ run_name <- 'N=20 K=300, H=0.2, dynamic ef,'
 # Mean Fitness
 mean_w_by_gen <- aggregate(mean_w ~ generation*patch_num , data = patch_data, FUN=mean)
 
-ggplot(mean_w_by_gen, aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5) + guides(col = guide_legend(nrow = 10)) + labs(y='Mean w', title=paste('Mean Fitness -- ',run_name))
+ggplot(mean_w_by_gen, aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5)
+#+ guides(col = guide_legend(nrow = 10)) + labs(y='Mean w', title=paste('Mean Fitness -- ',run_name))
 
 # Effective Migration Total
 eff_mig_by_gen <- aggregate(eff_migration ~ generation , data = eff_migration, FUN=mean)

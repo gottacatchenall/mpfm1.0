@@ -25,7 +25,7 @@ GenomeDict::GenomeDict(){
     }
 
     double MEAN_LOCUS_WEIGHT = params["MEAN_LOCUS_WEIGHT"];
-    printf("using fixed weight at each fitness locus!\n");
+    printf("using fixed weight: %.2f at each fitness locus!\n", MEAN_LOCUS_WEIGHT);
 
     for (int i = 0; i < n_ef; i++){
         std::vector<int> tmp_vec;

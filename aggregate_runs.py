@@ -146,81 +146,86 @@ def get_graph_stats(data):
 
 
 def write_demography(run_id, source_dir_path, target_dir_path):
+    try:
+        target_file_path = target_dir_path + '/' + demography_path
 
-    target_file_path = target_dir_path + '/' + demography_path
+        gld = source_dir_path + '/' + global_ld_path
+        lld = source_dir_path + '/' + local_ld_path
+        fst = source_dir_path + '/' + fst_path
+        alf = source_dir_path + '/' + allele_freq_path
 
-    gld = source_dir_path + '/' + global_ld_path
-    lld = source_dir_path + '/' + local_ld_path
-    fst = source_dir_path + '/' + fst_path
-    alf = source_dir_path + '/' + allele_freq_path
+        global_ld_df = pandas.read_csv(gld)
+        local_ld_df = pandas.read_csv(lld)
+        fst_df = pandas.read_csv(fst)
+        allele_freq_df =  pandas.read_csv(alf)
 
-    global_ld_df = pandas.read_csv(gld)
-    local_ld_df = pandas.read_csv(lld)
-    fst_df = pandas.read_csv(fst)
-    allele_freq_df =  pandas.read_csv(alf)
+        gens = allele_freq_df['generation'].unique()
 
-    gens = allele_freq_df['generation'].unique()
+        types = ['fitness', 'neutral']
 
-    types = ['fitness', 'neutral']
+        for gen in gens:
+            for t in types:
 
-    for gen in gens:
-        for t in types:
+                q = 'generation == ' + str(gen) + ' & type == \"' + str(t) + '\"'
 
-            q = 'generation == ' + str(gen) + ' & type == \"' + str(t) + '\"'
-
-            this_gen_alf = allele_freq_df.query(q)
-            this_gen_fst = fst_df.query(q)
-            this_gen_lld = local_ld_df.query(q)
-            this_gen_gld = global_ld_df.query(q)
+                this_gen_alf = allele_freq_df.query(q)
+                this_gen_fst = fst_df.query(q)
+                this_gen_lld = local_ld_df.query(q)
+                this_gen_gld = global_ld_df.query(q)
 
 
-            fst_mean, fst_sigma = get_fst(this_gen_fst)
-            lld_mean, lld_sigma = get_ld(this_gen_lld)
-            gld_mean, gld_sigma = get_ld(this_gen_gld)
-            n_fixed = get_num_fixed(this_gen_alf)
+                fst_mean, fst_sigma = get_fst(this_gen_fst)
+                lld_mean, lld_sigma = get_ld(this_gen_lld)
+                gld_mean, gld_sigma = get_ld(this_gen_gld)
+                n_fixed = get_num_fixed(this_gen_alf)
 
-            fit = 0
-            neut = 0
-            if t == "fitness":
-                fit = 1
-            if t == "neutral":
-                neut = 1
+                fit = 0
+                neut = 0
+                if t == "fitness":
+                    fit = 1
+                if t == "neutral":
+                    neut = 1
 
-            write_line = "%d,%d,%f,%f,%f,%f,%f,%f,%f,%d,%d\n" % (run_id, gen, fst_mean, fst_sigma, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
+                write_line = "%d,%d,%f,%f,%f,%f,%f,%f,%f,%d,%d\n" % (run_id, gen, fst_mean, fst_sigma, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
+
+                with open(target_file_path, 'a') as file:
+                    file.write(write_line)
+    except:
+        print('failed w/ ' + source_dir_path)
+def write_dynamics(run_id, source_dir_path, target_dir_path):
+    try:
+        target_file_path = target_dir_path + '/' + dynamics_path
+
+        att_mig = source_dir_path + '/' + att_mig_path
+        eff_mig = source_dir_path + '/' + eff_mig_path
+        pat = source_dir_path + '/' + patches_path
+
+        att_mig_data = pandas.read_csv(att_mig)
+        eff_mig_data = pandas.read_csv(eff_mig)
+        patch_data = pandas.read_csv(pat)
+
+        gens = eff_mig_data['generation'].unique()
+
+        for gen in gens:
+            q = 'generation == ' + str(gen)
+
+            this_gen_att = att_mig_data.query(q)
+            this_gen_eff = eff_mig_data.query(q)
+            this_gen_patches = patch_data.query(q)
+
+            #att_mig_mean, att_mig_sigma = get_att_mig(this_gen_att)
+            att_mig_mean, att_mig_sigma = 0,0
+            eff_mig_mean, eff_mig_sigma = get_eff_mig(this_gen_eff)
+
+            prop_extinct = get_prop_extinct(this_gen_patches)
+            prop_k_mean, prop_k_sigma = get_prop_k(this_gen_patches)
+
+            write_line = '%d,%d,%f,%f,%f,%f,%f,%f,%f\n' % (run_id, gen, eff_mig_mean, eff_mig_sigma, att_mig_mean, att_mig_sigma, prop_extinct, prop_k_mean, prop_k_sigma)
 
             with open(target_file_path, 'a') as file:
                 file.write(write_line)
-
-def write_dynamics(run_id, source_dir_path, target_dir_path):
-    target_file_path = target_dir_path + '/' + dynamics_path
-
-    att_mig = source_dir_path + '/' + att_mig_path
-    eff_mig = source_dir_path + '/' + eff_mig_path
-    pat = source_dir_path + '/' + patches_path
-
-    att_mig_data = pandas.read_csv(att_mig)
-    eff_mig_data = pandas.read_csv(eff_mig)
-    patch_data = pandas.read_csv(pat)
-
-    gens = att_mig_data['generation'].unique()
-
-    for gen in gens:
-        q = 'generation == ' + str(gen)
-
-        this_gen_att = att_mig_data.query(q)
-        this_gen_eff = eff_mig_data.query(q)
-        this_gen_patches = patch_data.query(q)
-
-        att_mig_mean, att_mig_sigma = get_att_mig(this_gen_att)
-        eff_mig_mean, eff_mig_sigma = get_eff_mig(this_gen_eff)
-
-        prop_extinct = get_prop_extinct(this_gen_patches)
-        prop_k_mean, prop_k_sigma = get_prop_k(this_gen_patches)
-
-        write_line = '%d,%d,%f,%f,%f,%f,%f,%f,%f\n' % (run_id, gen, eff_mig_mean, eff_mig_sigma, att_mig_mean, att_mig_sigma, prop_extinct, prop_k_mean, prop_k_sigma)
-
-        with open(target_file_path, 'a') as file:
-            file.write(write_line)
+    except:
+        print('failed w/ ' + source_dir_path)
 
 def main():
     folder = get_folder()
