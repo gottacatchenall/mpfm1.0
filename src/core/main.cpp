@@ -15,6 +15,11 @@ std::vector<std::vector<double>> dist_matrix;
 GenomeDict* genome_dict;
 
 int main(int argc, char* argv[]){
+    if (argv[1]){
+        chdir(argv[1]);
+    }
+
+
     init();
     int num_gen = params["NUM_GENERATIONS"];
     int census_freq = params["CENSUS_FREQ"];

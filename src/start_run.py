@@ -61,14 +61,14 @@ def create_ini_file(dir_path, params):
         f.write('%s %s\n'  % (name,str(val)))
 
 
-def start_proc(mpfm_path):
+def start_proc(mpfm_path, dir_path):
+    exe = (mpfm_path) + ' ' + dir_path
     process = subprocess.run(mpfm_path, stdout=True, stderr=True, shell=True)
 
 def write_exe_name(dir_path, mpfm_path, this_dir):
     os.chdir(this_dir)
 
-    exe = 'cd ' + dir_path + ' && ' + mpfm_path + '\n'
-    print(exe)
+    exe = mpfm_path + ' ' + dir_path + '\n'
 
     with open('lb_cmd_file', 'a') as file:
         file.write(exe)
@@ -92,7 +92,7 @@ def start_run(params):
 
     start_time = time.time()
 
-    start_proc(mpfm_path)
+    start_proc(mpfm_path, dir_path)
 
     elapsed_time = time.time() - start_time
     print("\n\tRUN FINISHED IN: " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
