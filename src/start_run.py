@@ -64,10 +64,27 @@ def create_ini_file(dir_path, params):
 def start_proc(mpfm_path):
     process = subprocess.run(mpfm_path, stdout=True, stderr=True, shell=True)
 
+def write_exe_name(dir_path, mpfm_path, this_dir):
+    os.chdir(this_dir)
+
+    exe = 'cd ' + dir_path + ' && ' + mpfm_path + '\n'
+    print(exe)
+
+    with open('lb_cmd_file', 'a') as file:
+        file.write(exe)
+
+
+def create_batch_run_file(this_dir, params):
+    mpfm_path = os.path.abspath('./bin/mpfm')
+    dir_name = params['DATA_DIRECTORY'] or str(time.time())
+    dir_path = create_run_directory(dir_name)
+    create_ini_file(dir_path, params)
+    write_exe_name(dir_path, mpfm_path, this_dir)
+
 def start_run(params):
     mpfm_path = os.path.abspath('./bin/mpfm')
 
-    dir_name = params['DATA_DIRECTORY'] or None
+    dir_name = params['DATA_DIRECTORY'] or str(time.time())
     dir_path = create_run_directory(dir_name)
 
     create_ini_file(dir_path, params)

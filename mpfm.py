@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from src.start_run import start_run, print_info, print_run
+from src.start_run import start_run, print_info, print_run, create_batch_run_file
 from src.parse_args import setup_arg_parser, read_param_table, read_batch_file
 import os, copy, multiprocessing
 import numpy as np
@@ -28,9 +28,10 @@ def main():
                 this_rep_params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
 
                 os.chdir(this_dir)
-                print_run(this_rep_params, i, rep)
-                p = multiprocessing.Process(target=start_run, args=(this_rep_params,))
-                p.start()
+                create_batch_run_file(this_dir, this_rep_params)
+                #print_run(this_rep_params, i, rep)
+                #p = multiprocessing.Process(target=start_run, args=(this_rep_params,))
+                #p.start()
     else:
         params = {}
         for param in param_table:

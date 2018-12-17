@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <random>
 #include <assert.h>
 #include <cmath>
