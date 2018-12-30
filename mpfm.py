@@ -24,7 +24,7 @@ def main():
                 this_rep_params["DATA_DIRECTORY"] = params["DATA_DIRECTORY"] + str(rep)
                 this_rep_params["RANDOM_SEED"] = np.random.randint(0, 100000000)
                 this_rep_params["EF_RANDOM_SEED"] = np.random.randint(0, 100000000)
-                this_rep_params["PATCH_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                this_rep_params["PATCH_RAND OM_SEED"] = np.random.randint(0, 100000000)
                 this_rep_params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
 
                 os.chdir(this_dir)

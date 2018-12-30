@@ -292,11 +292,12 @@ std::vector<int> Individual::get_crossing_over_points(){
     int r;
     bool exists;
     for(int i = 0; i < n_crossover_events; i++){
-        do{
-            r = int_uniform(0,n_loci-1, main_generator);
-            exists = (std::find(crossing_over_points.begin(), crossing_over_points.end(), r) != crossing_over_points.end());
-        } while(exists);
-        crossing_over_points.push_back(r);
+        r = int_uniform(0,n_loci-1, main_generator);
+        exists = (std::find(crossing_over_points.begin(), crossing_over_points.end(), r) != crossing_over_points.end());
+
+        if (!exists){
+            crossing_over_points.push_back(r);
+        }
     }
 
     // Sort crossing_over_points
