@@ -23,31 +23,23 @@ int main(int argc, char* argv[]){
     init();
     int num_gen = params["NUM_GENERATIONS"];
     int census_freq = params["CENSUS_FREQ"];
-    //int ef_freq = params["MIGRATION_SAMPLE_FREQ"];
-
+    int samp_freq = params["MIGRATION_SAMPLE_FREQ"];
     bool static_env_factors = params["ENV_FACTORS_STATIC"];
-    bool col = params["PATCH_COLONIZATION"];
-    double col_prob = params["PATCH_COLONIZATION_PROB"];
-    bool ext = params["PATCH_EXTINCTION"];
-    double ext_prob = params["PATCH_EXTINCTION_PROB"];
-
 
     for (generation = 0; generation <= num_gen; generation++){
         if (!static_env_factors){
             shift_environment();
         }
 
-        if (col){
-            colonization(col_prob);
-        }
-        if (ext){
-            extinction(ext_prob);
-        }
-
         migration();
         selection();
         check_dispersal();
-        logging();
+
+        if (generation % samp_freq == 0 && generation > 0){
+            logging();
+        }
+
+
         mating();
 
         if (generation % census_freq == 0 && generation > 0){
@@ -70,6 +62,8 @@ void migration(){
             }
         }*/
 
+    double base_mig = params["BASE_MIGRATION_RATE"];
+
     std::vector<Individual*> indivs;
     for (Patch* patch_i: *patches){
         std::vector<double> row = migration_tracker->get_dispersal_row(patch_i->get_id());
@@ -83,11 +77,13 @@ void migration(){
             if (j != this_patch_id){
                 Patch* patch_j = (*patches)[j];
                 double prop = row[j];
-                int n_i_to_j = int(prop * n_this_patch);
-                indivs = patch_i->pick_n_random_indivs(n_i_to_j);
-                for (Individual* indiv_i: indivs){
-                    patch_j->add_to_migrant_queue(indiv_i);
-                    indiv_i->migrate(patch_j);
+                int n_i_to_j = int(prop * n_this_patch * base_mig);
+                if (n_i_to_j > 0){
+                    indivs = patch_i->pick_n_random_indivs(n_i_to_j);
+                    for (Individual* indiv_i: indivs){
+                        patch_j->add_to_migrant_queue(indiv_i);
+                        indiv_i->migrate(patch_j);
+                    }
                 }
             }
         }
@@ -222,9 +218,9 @@ void census(){
     for (Patch* patch_i: *patches){
         al_tracker.get_ld(patch_i->get_id(), "fitness");
         al_tracker.get_ld(patch_i->get_id(), "neutral");
-        al_tracker.get_global_ld("fitness");
-        al_tracker.get_global_ld("neutral");
     }
+    al_tracker.get_global_ld("fitness");
+    al_tracker.get_global_ld("neutral");
 }
 
 void shift_environment(){
@@ -232,30 +228,10 @@ void shift_environment(){
 
     double prop_shifted = 0.5 + (0.5 * double(generation)/double(num_gen));
 
-
     for (EnvFactor* ef : *envFactors){
         ef->shift(prop_shifted);
     }
 }
-
-void colonization(double prob){
-    /*for (Patch* patch_i : *patches){
-        if (real_uniform(0.0, 1.0, main_generator) < prob){
-
-        }
-    }*/
-}
-
-void extinction(double prob){
-
-
-
-    if (real_uniform(0.0, 1.0, main_generator) < prob){
-        // exp
-        //exp(-1
-    }
-}
-
 
 void get_fst(){
     std::vector<int> pooled_heterozygos_ct_by_locus;
