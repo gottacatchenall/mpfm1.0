@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import sys, os, datetime
-from tabulate import tabulate
 import numpy as np
 import subprocess
 import time

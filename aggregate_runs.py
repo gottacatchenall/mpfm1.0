@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import csv, argparse, os, pandas
-import networkx as nx
+#import networkx as nx
 
 # =============================================
 #  Globals, etc.
@@ -131,7 +131,7 @@ def get_graph_stats(data):
 
 
     dispersal_probs = np.zeros((n_patches, n_patches))
-    G = nx.Graph()
+    #G = nx.Graph()
 
 
     for i in range(n_patches):
@@ -140,9 +140,9 @@ def get_graph_stats(data):
             row_sum += incidence_matrix[i,j]
         for j in range(n_patches):
             dispersal_probs[i,j] = incidence_matrix[i,j] / row_sum
-            G.add_edge(i,j, w=dispersal_probs[i,j])
+    #        G.add_edge(i,j, w=dispersal_probs[i,j])
 
-    centrality =  nx.eigenvector_centrality(G, weight='w')
+    #centrality =  nx.eigenvector_centrality(G, weight='w')
 
 
 def write_demography(run_id, source_dir_path, target_dir_path):

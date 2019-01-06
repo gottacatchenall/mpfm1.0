@@ -18,20 +18,23 @@ def main():
 
         for i,params in enumerate(param_list):
             num_rep = int(params['NUM_REPLICATES'])
-
+            procs = []
             for rep in range(num_rep):
                 this_rep_params = copy.deepcopy(params)
                 this_rep_params["DATA_DIRECTORY"] = params["DATA_DIRECTORY"] + str(rep)
-                this_rep_params["RANDOM_SEED"] = np.random.randint(0, 100000000)
-                this_rep_params["EF_RANDOM_SEED"] = np.random.randint(0, 100000000)
-                this_rep_params["PATCH_RAND OM_SEED"] = np.random.randint(0, 100000000)
-                this_rep_params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                this_rep_params["RANDOM_SEED"] = str(np.random.randint(0, 100000000))
+                this_rep_params["EF_RANDOM_SEED"] = str(np.random.randint(0, 100000000))
+                this_rep_params["PATCH_RAND OM_SEED"] = str(np.random.randint(0, 100000000))
+                this_rep_params["GENOME_RANDOM_SEED"] = str(np.random.randint(0, 100000000))
 
                 os.chdir(this_dir)
-                create_batch_run_file(this_dir, this_rep_params)
+                #create_batch_run_file(this_dir, this_rep_params)
                 #print_run(this_rep_params, i, rep)
-                #p = multiprocessing.Process(target=start_run, args=(this_rep_params,))
-                #p.start()
+                p = multiprocessing.Process(target=start_run, args=(this_rep_params,))
+                p.start()
+                procs.append(p)
+            for p in procs:
+                p.join()
     else:
         params = {}
         for param in param_table:
