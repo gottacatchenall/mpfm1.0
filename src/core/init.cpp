@@ -23,11 +23,17 @@ void read_params_file(){
 
     while (std::getline(infile, line)) {
         std::istringstream iss(line);
-        std::string name;
-        double val;
+        std::vector<std::string> record;
+        while (iss){
+          std::string s;
+          if (!getline(iss, s, ',' )) break;
+          record.push_back( s );
+        }
 
-        iss >> name;
-        iss >> val;
+        std::string name = record[0];
+        double val = atof(record[1].c_str());
+
+        std::cout << "name: " << name << " val: " << val << "\n";
 
         params.insert(std::pair<std::string, double>(name, val));
     }
@@ -49,21 +55,35 @@ void initialize_env_factors(){
 }
 
 void initialize_patches(){
-    int n_patches = int(params["NUM_PATCHES"]);
-    double k_mean =  params["PATCH_K_MEAN"];
-    double k_sigma = params["PATCH_K_SD"];
+    int n_patches = params["NUM_PATCHES"];
+    int n_indiv = params["N_INDIVIDUALS"];
     double side_len = params["SIDE_LENGTH"];
+    double alpha = params["PATCH_DECAY"];
+
+    double pow_val = (1.0/(alpha+1.0));
 
     patches = new std::vector<Patch*>;
+    std::vector<double> k_vals;
+    double k, y;
+
+    double k_sum = 0;
+    for (int i = 0; i < n_patches; i++){
+        y = real_uniform(0, 1.0, patch_generator);
+        k = pow(y, pow_val);
+        k_vals.push_back(k);
+        k_sum += k;
+    }
 
     for (int i = 0; i < n_patches; i++){
-        double k = normal(k_mean, k_sigma, patch_generator);
-        int x = int_uniform(0, side_len-1, patch_generator);
-        int y = int_uniform(0, side_len-1, patch_generator);
-
-        if (k < 0){
-            k = 0;
-        }
+        k_vals[i] = k_vals[i]/k_sum;
+        printf("k_val: %f\n", k_vals[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < n_patches; i++){
+        double k = double(n_indiv)*k_vals[i];
+        double x = real_uniform(0, side_len-1, patch_generator);
+        double y = real_uniform(0, side_len-1, patch_generator);
+        printf("K: %.2f\n", k);
         Patch *tmp = new Patch(x,y,k);
         patches->push_back(tmp);
     }
@@ -219,7 +239,8 @@ std::vector<std::vector<double>> gen_alleles(){
 
     for (int l = 0; l < n_loci; l++){
         alleles.push_back(std::vector<double>());
-        int n_alleles = expected_num_alleles();
+        //int n_alleles = expected_num_alleles();
+        int n_alleles = 5;
         for (int i = 0; i < n_alleles; i++){
             //alleles[l].push_back(1.0);
             alleles[l].push_back(real_uniform(0, 1.0, main_generator));

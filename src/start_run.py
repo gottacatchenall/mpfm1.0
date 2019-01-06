@@ -33,12 +33,7 @@ def print_info():
 
 
 def create_run_directory(p):
-    if (p):
-        name = p
-    else:
-        name = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
-
-    path = os.path.abspath('./data/' + name)
+    path = os.path.abspath('./data/' + p)
 
     try:
         os.mkdir(path)
@@ -58,7 +53,7 @@ def create_ini_file(dir_path, params):
     for param in params:
         name = param
         val = params[param]
-        f.write('%s %s\n'  % (name,str(val)))
+        f.write('%s,%s\n'  % (name,str(val)))
 
 
 def start_proc(mpfm_path, dir_path):
@@ -84,7 +79,7 @@ def create_batch_run_file(this_dir, params):
 def start_run(params):
     mpfm_path = os.path.abspath('./bin/mpfm')
 
-    dir_name = params['DATA_DIRECTORY'] or str(time.time())
+    dir_name = params['DATA_DIRECTORY']
     dir_path = create_run_directory(dir_name)
 
     create_ini_file(dir_path, params)

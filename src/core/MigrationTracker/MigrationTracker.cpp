@@ -27,15 +27,17 @@ MigrationTracker::MigrationTracker(){
 		double row[n_patches];
 		double row_sum = 0;
 		for (int j = 0; j < n_patches; j++){
-			int x2 = (*patches)[j]->get_x();
-			int y2 = (*patches)[j]->get_y();
-			double x_dist = x2 - x1;
-            double y_dist = y2 - y1;
+			if (i != j){
+				int x2 = (*patches)[j]->get_x();
+				int y2 = (*patches)[j]->get_y();
+				double x_dist = x2 - x1;
+	            double y_dist = y2 - y1;
 
-            double dist = sqrt(pow((x_dist),2)+pow((y_dist),2));
-			double potential = exp(-1*DECAY_STR*dist);
-			row[j] = potential;
-			row_sum += potential;
+	            double dist = sqrt(pow((x_dist),2)+pow((y_dist),2));
+				double potential = exp(-1*DECAY_STR*dist);
+				row[j] = potential;
+				row_sum += potential;
+			}
 		}
 
 		for (int j = 0; j < n_patches; j++){
