@@ -32,7 +32,7 @@ def print_info():
 
 
 def create_run_directory(p):
-    path = os.path.abspath('./data/' + p)
+    path = os.path.abspath('/scratch/summit/mica5688/data' + p)
 
     try:
         os.mkdir(path)
@@ -52,7 +52,8 @@ def create_ini_file(dir_path, params):
     for param in params:
         name = param
         val = params[param]
-        f.write('%s,%s\n'  % (name,str(val)))
+        if (name != "BATCH"):
+          f.write('%s,%s\n'  % (name,str(val)))
 
 
 def start_proc(mpfm_path, dir_path):
@@ -62,7 +63,7 @@ def start_proc(mpfm_path, dir_path):
 def write_exe_name(dir_path, mpfm_path, this_dir):
     os.chdir(this_dir)
 
-    exe = mpfm_path + ' ' + dir_path + '\n'
+    exe = mpfm_path + ' ' + dir_path + ';\n'
 
     with open('lb_cmd_file', 'a') as file:
         file.write(exe)

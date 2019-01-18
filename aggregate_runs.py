@@ -68,7 +68,7 @@ def add_metadata(run_id, source_dir_path, target_dir_path):
     param_file_path = source_dir_path + '/' + params_path
     target_file_path = target_dir_path + '/' + metadata_path
 
-    df = pandas.read_csv(param_file_path, error_bad_lines=False, sep=' ', header=None)
+    df = pandas.read_csv(param_file_path, error_bad_lines=False, sep=',', header=None)
     df = df.transpose()
     df.columns = df.iloc[0]
     df = df.reindex(df.index.drop(0))

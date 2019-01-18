@@ -63,7 +63,6 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
                         for (dependent_allele* al2 : al1->loci[l2_i]){
                             f_both = double(al2->freq_map[patch_num])/double(2*n_total);
                             f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
-
                             if (f_al2 > 0){
                                 if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
                                     printf("al1_n = %d\n", al1->freq_map[patch_num]);
@@ -74,7 +73,8 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
                                 }
 
                                 ld = (f_al1 * f_al2) - f_both;
-                                sum += abs(ld);
+                                ld = fabs(ld);
+                                sum += ld;
                                 ct++;
                                 //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
                             }
@@ -144,7 +144,7 @@ void AlleleTracker::get_global_ld(std::string type){
                             }
 
                             ld = (f_al1 * f_al2) - f_both;
-                            sum += abs(ld);
+                            sum += fabs(ld);
                             ct++;
                             //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
                         }
