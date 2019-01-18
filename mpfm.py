@@ -16,7 +16,7 @@ def main():
     if (args['BATCH']):
         area_decay_space = [1.0, 2.0, 3.0]
         dist_decay_space = [1.0, 2.0, 3.0]
-        total_indiv_space = [500, 2000]
+        total_indiv_space = [4000]
         n_patches_space = [5, 10, 25]
         n_rep = 10
 

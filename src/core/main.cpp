@@ -112,15 +112,15 @@ void logging(){
         if (patch_i->get_size() > 0){
             log_eff_migration(patch_i);
             log_patch(patch_i);
-            for (Patch* patch_j: *patches){
+            /*for (Patch* patch_j: *patches){
                 if (patch_j->get_size()){
-                    log_attempted_migration(patch_i, patch_j);
-                    log_successful_migration(patch_i, patch_j);
+                    //log_attempted_migration(patch_i, patch_j);
+                    //log_successful_migration(patch_i, patch_j);
                 }
-            }
+            }*/
         }
     }
-    get_fst();
+    //get_fst();
 }
 
 
@@ -216,8 +216,18 @@ void census(){
     AlleleTracker al_tracker;
     al_tracker.construct_allele_table();
     for (Patch* patch_i: *patches){
-        al_tracker.get_ld(patch_i->get_id(), "fitness");
-        al_tracker.get_ld(patch_i->get_id(), "neutral");
+        int p1 = patch_i->get_id();
+        al_tracker.get_ld(p1, "fitness");
+        al_tracker.get_ld(p1, "neutral");
+
+        for (Patch* patch_j: *patches){
+            int p2 = patch_j->get_id();
+            if (p1 > p2){
+                al_tracker.get_pairwise_ld(p1, p2, "fitness");
+                al_tracker.get_pairwise_ld(p1, p2, "neutral");
+            }
+        }
+
     }
     al_tracker.get_global_ld("fitness");
     al_tracker.get_global_ld("neutral");

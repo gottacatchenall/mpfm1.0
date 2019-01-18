@@ -155,6 +155,18 @@ void log_global_linkage(int l1, int l2, double D, std::string type){
     file << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
 }
 
+void log_pairwise_linkage(int patch_i, int patch_j, double D, std::string type){
+    std::string linkage_file = "pairwise_linkage.csv";
+
+    std::ofstream file;
+    file.open(linkage_file.c_str(), std::ios::app);
+    if(is_file_empty(linkage_file)){
+        file << "generation,patch_i,patch_j,D,type\n";
+    }
+
+    file << generation << "," << patch_i << "," << patch_j << "," << D << "," << type <<  "\n";
+}
+
 
 void log_allele_freq(int patch_num, int locus, double allele_val, double freq, std::string type){
     std::string allele_freq_file = "allele_freq.csv";

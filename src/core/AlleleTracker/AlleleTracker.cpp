@@ -161,6 +161,93 @@ void AlleleTracker::get_global_ld(std::string type){
     }
 }
 
+
+void AlleleTracker::get_pairwise_ld(int patch1_num, int patch2_num, std::string type){
+
+    double f_al1, f_al2, f_both, ld;
+    int n_ef = params["NUM_ENV_FACTORS"];
+    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
+
+    Patch* p1 = (*patches)[patch1_num];
+    Patch* p2 = (*patches)[patch2_num];
+
+    int n1 = p1->get_size();
+    int n2 = p2->get_size();
+
+
+    std::vector<int> loci;
+    if (type == "fitness"){
+        for (int i = 0; i < n_ef; i++){
+            for (int j = 0; j < n_loci_per_ef; j++){
+                loci.push_back(genome_dict->fitness_loci[i][j]);
+            }
+        }
+    }
+    else if (type == "neutral"){
+        for (int l : genome_dict->neutral_loci){
+            loci.push_back(l);
+        }
+    }
+
+    int n_loci = loci.size();
+    std::sort(loci.begin(), loci.end());
+
+    std::vector<allele*> alleles;
+
+    double total_sum = 0.0;
+    double total_ct = 0;
+
+    for (int l1 = 0; l1 < n_loci; l1++){
+        int l1_i = loci[l1];
+
+        for (int l2 = l1+1; l2 < n_loci; l2++){
+            alleles = this->allele_map[l1_i];
+            int l2_i = loci[l2];
+            double sum = 0.0;
+            int ct = 0;
+
+            // TODO if extinct if one of the patches, stop
+            for (allele* al1: alleles){
+                //    f_al1 = double(al1->freq_map[patch_num])/double(2*n_total);
+                f_al1 = double(al1->freq_map[patch1_num] + al1->freq_map[patch2_num])/double(2*(n1+n2));
+                if (al1->freq_map[patch1_num] > 0 && al1->freq_map[patch2_num] > 0){
+                    for (dependent_allele* al2 : al1->loci[l2_i]){
+                        f_both = double(al2->freq_map[patch1_num] + al2->freq_map[patch2_num])/double(2*(n1+n2));
+
+                        allele* al2_s = this->find_allele(al2->locus, al2->allele_val);
+                        f_al2 = double(al2_s->freq_map[patch1_num] + al2_s->freq_map[patch2_num])/double(2*(n1+n2));
+
+                        if (al2->freq_map[patch1_num] > 0 && al2->freq_map[patch2_num] > 0){
+                            if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
+                                printf("ld assert\n");
+                                exit(-1);
+                            }
+
+                            ld = (f_al1 * f_al2) - f_both;
+                            sum += abs(ld);
+                            ct++;
+                            //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
+                        }
+                    }
+                }
+            }
+            if (ct == 0){
+                // only happens when l2 = l1+1
+                //printf("somehow ct ended up at 0?\n");
+            }
+            double avg_ld_this_pair = double(sum)/double(ct);
+
+            total_sum += avg_ld_this_pair;
+            total_ct++;
+
+        }
+    }
+
+    double avg_ld = total_sum/double(total_ct);
+    log_pairwise_linkage(patch1_num, patch2_num, avg_ld, type);
+
+}
+
 void AlleleTracker::construct_allele_table(){
     assert(allele_map[0].size() == 0);
 

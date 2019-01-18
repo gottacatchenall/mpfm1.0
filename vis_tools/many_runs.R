@@ -16,18 +16,25 @@
   data <- merge(data, metadata, by="run_id")
 }
 
-ggplot(subset(data, fitness == 0), aes(generation, global_ld_mean, group=(run_id), color=(MEAN_LOCUS_WEIGHT))) + geom_point() + geom_smooth(method="lm")
+ggplot(subset(data, fitness==1), aes(generation, global_ld_mean, group=(run_id), color=(NUM_PATCHES))) + geom_point() + geom_line()
 
 ggplot(subset(data), aes(generation, fst_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
 
-ld_model <- (lm(global_ld_mean ~ generation*MEAN_LOCUS_WEIGHT, data = data))
+ggplot(subset(data, fitness==1), aes(generation, n_loci_fixed, group=(run_id), color=(PATCH_DECAY))) + geom_point() + geom_line()
 
 
+ggplot(data, aes(generation, eff_mig_mean, group=(run_id), color=(INCIDENCE_FUNCTION_DECAY))) + geom_point() + geom_line()
 
 ggplot(subset(data), aes(generation, prop_of_k_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
 
+aggregate_by <- function(arg){
+  d <- subset(data, fitness == 1)
+  col = d[[arg]]
+  agg_data <- do.call(data.frame, aggregate(global_ld_mean ~ generation*col, data = d, FUN = function(x) c(mn = mean(x), sd = sd(x))))
+  agg_data$ymax <- agg_data$global_ld_mean.mn + agg_data$global_ld_mean.sd
+  agg_data$ymin <- agg_data$global_ld_mean.mn - agg_data$global_ld_mean.sd
+  ggplot(agg_data, aes(generation, global_ld_mean.mn, color = col, group = col )) + geom_ribbon(aes(ymin=ymin, ymax=ymax + global_ld_mean.sd)) + geom_line()
+}
 
-
-#ggplot(data, aes(generation, eff_mig_mean, color=as.factor(run_id), group=as.factor(run_id))) + geom_smooth() + geom_point()
-
+aggregate_by("PATCH_DECAY")
 

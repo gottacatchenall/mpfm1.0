@@ -68,24 +68,24 @@ def add_metadata(run_id, source_dir_path, target_dir_path):
     param_file_path = source_dir_path + '/' + params_path
     target_file_path = target_dir_path + '/' + metadata_path
 
-    df = pandas.read_csv(param_file_path, error_bad_lines=False, sep=' ', header=None)
+    df = pandas.read_csv(param_file_path, error_bad_lines=False, sep=',', header=None)
     df = df.transpose()
     df.columns = df.iloc[0]
     df = df.reindex(df.index.drop(0))
     df['run_id'] = run_id
 
+    print df
     if len(metadata) == 0:
         metadata = df
     else:
         metadata = pandas.concat([metadata, df], sort=True)
+    print metadata
+    #with open(target_file_path, 'w') as f:
+        #metadata.to_csv(f, header=True)
 
-    with open(target_file_path, 'w') as f:
-        metadata.to_csv(f, header=True)
 
-
-def write_metadata():
+def write_metadata(target_dir_path):
     global metadata
-    param_file_path = source_dir_path + '/' + params_path
     target_file_path = target_dir_path + '/' + metadata_path
 
     with open(target_file_path, 'a') as f:
@@ -253,12 +253,13 @@ def main():
     for x in (os.listdir(folder)):
         path = os.path.abspath(folder) + '/' + x
         if os.path.isdir(path):
+            print path
             add_metadata(id_ct, path, folder)
             write_demography(id_ct, path, folder)
             write_dynamics(id_ct, path, folder)
             id_ct += 1
 
-    write_metadata()
+    write_metadata(folder)
 
 if __name__ == '__main__':
     main()

@@ -39,6 +39,7 @@ class AlleleTracker{
         AlleleTracker();
         void construct_allele_table();
         void get_ld(int patch_num, std::string type);
+        void get_pairwise_ld(int patch1_num, int patch2_num, std::string type);
         void get_global_ld(std::string type);
         void update_tracker(int locus, double allele_val, int patch_id);
         void add_dependent_allele(allele* primary_allele, int dependent_locus, double dependent_allele_val, int patch_id);
