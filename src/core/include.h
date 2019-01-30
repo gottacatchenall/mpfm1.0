@@ -72,6 +72,7 @@ void log_locus(int l, int ef, double strength, std::string type);
 //void log_global_linkage(int l1, double al1, int l2, double al2, double D, std::string type);
 void log_linkage(int patch_num, int l1, int l2, double D, std::string type);
 void log_global_linkage(int l1, int l2, double D, std::string type);
+void log_pairwise_linkage(int patch_i, int patch_j, double D, std::string type);
 void log_allele_freq(int patch_num, int locus, double allele_val, double freq, std::string type);
 void log_env_factors(int x, int y);
 

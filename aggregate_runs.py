@@ -24,7 +24,7 @@ dynamics_path = 'dynamics.csv'
 demography_path = 'demography.csv'
 metadata_path = 'metadata.csv'
 
-demography_csv_header = 'run_id, generation, fst_mean, fst_sigma, global_ld_mean, global_ld_sigma, local_ld_mean, local_ld_sigma, n_loci_fixed, neutral, fitness\n'
+demography_csv_header = 'run_id, generation, global_ld_mean, global_ld_sigma, local_ld_mean, local_ld_sigma, n_loci_fixed, neutral, fitness\n'
 dynamics_csv_header = 'run_id, generation, eff_mig_mean, eff_mig_sd, att_mig_mean, att_mig_sd, prop_patches_extinct, prop_of_k_mean, prop_of_k_sd\n'
 
 # =============================================
@@ -74,18 +74,18 @@ def add_metadata(run_id, source_dir_path, target_dir_path):
     df = df.reindex(df.index.drop(0))
     df['run_id'] = run_id
 
+    print df
     if len(metadata) == 0:
         metadata = df
     else:
         metadata = pandas.concat([metadata, df], sort=True)
+    print metadata
+    #with open(target_file_path, 'w') as f:
+        #metadata.to_csv(f, header=True)
 
-    with open(target_file_path, 'w') as f:
-        metadata.to_csv(f, header=True)
 
-
-def write_metadata():
+def write_metadata(target_dir_path):
     global metadata
-    param_file_path = source_dir_path + '/' + params_path
     target_file_path = target_dir_path + '/' + metadata_path
 
     with open(target_file_path, 'a') as f:
@@ -168,12 +168,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
 
         gld = source_dir_path + '/' + global_ld_path
         lld = source_dir_path + '/' + local_ld_path
-        fst = source_dir_path + '/' + fst_path
+        #fst = source_dir_path + '/' + fst_path
         alf = source_dir_path + '/' + allele_freq_path
 
         global_ld_df = pandas.read_csv(gld)
         local_ld_df = pandas.read_csv(lld)
-        fst_df = pandas.read_csv(fst)
+        #fst_df = pandas.read_csv(fst)
         allele_freq_df =  pandas.read_csv(alf)
 
         gens = allele_freq_df['generation'].unique()
@@ -186,12 +186,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
                 q = 'generation == ' + str(gen) + ' & type == \"' + str(t) + '\"'
 
                 this_gen_alf = allele_freq_df.query(q)
-                this_gen_fst = fst_df.query(q)
+                #this_gen_fst = fst_df.query(q)
                 this_gen_lld = local_ld_df.query(q)
                 this_gen_gld = global_ld_df.query(q)
 
 
-                fst_mean, fst_sigma = get_fst(this_gen_fst)
+                #fst_mean, fst_sigma = get_fst(this_gen_fst)
                 lld_mean, lld_sigma = get_ld(this_gen_lld)
                 gld_mean, gld_sigma = get_ld(this_gen_gld)
                 n_fixed = get_num_fixed(this_gen_alf)
@@ -203,12 +203,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
                 if t == "neutral":
                     neut = 1
 
-                write_line = "%d,%d,%f,%f,%f,%f,%f,%f,%f,%d,%d\n" % (run_id, gen, fst_mean, fst_sigma, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
+                write_line = "%d,%d,%f,%f,%f,%f,%f,%f,%f,%d,%d\n" % (run_id, gen, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
 
                 with open(target_file_path, 'a') as file:
                     file.write(write_line)
-    except:
-        print('failed w/ ' + source_dir_path)
+    except Exception as e: print(e)
+
 def write_dynamics(run_id, source_dir_path, target_dir_path):
     try:
         target_file_path = target_dir_path + '/' + dynamics_path
@@ -253,12 +253,13 @@ def main():
     for x in (os.listdir(folder)):
         path = os.path.abspath(folder) + '/' + x
         if os.path.isdir(path):
+            print path
             add_metadata(id_ct, path, folder)
             write_demography(id_ct, path, folder)
-            write_dynamics(id_ct, path, folder)
+            #write_dynamics(id_ct, path, folder)
             id_ct += 1
 
-    write_metadata()
+    write_metadata(folder)
 
 if __name__ == '__main__':
     main()

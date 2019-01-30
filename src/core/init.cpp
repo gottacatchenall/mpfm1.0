@@ -239,7 +239,9 @@ std::vector<std::vector<double>> gen_alleles(){
 
     for (int l = 0; l < n_loci; l++){
         alleles.push_back(std::vector<double>());
-        int n_alleles = 2;
+
+        int n_alleles = expected_num_alleles();
+
         for (int i = 0; i < n_alleles; i++){
             //alleles[l].push_back(1.0);
             alleles[l].push_back(real_uniform(0, 1.0, main_generator));
