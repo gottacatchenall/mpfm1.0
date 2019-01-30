@@ -63,24 +63,18 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
                             f_both = double(al2->freq_map[patch_num])/double(2*n_total);
                             f_al2 = double(this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num])/double(2*n_total);
 
-                                if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
-                                    printf("al1_n = %d\n", al1->freq_map[patch_num]);
-                                    printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num]);
-                                    printf("both_n = %d\n", al2->freq_map[patch_num]);
-                                    printf("ld assert\n");
-                                    exit(-1);
-                                }
+                            if (!(f_al1 >= 0.0 && f_al1 <= 1.0) || !((f_al2 >= 0.0 && f_al2 <= 1.0)) || !(f_both >= 0.0 && f_both <= 1.0)){
+                                printf("al1_n = %d\n", al1->freq_map[patch_num]);
+                                printf("al2_n = %d\n", this->find_allele(al2->locus, al2->allele_val)->freq_map[patch_num]);
+                                printf("both_n = %d\n", al2->freq_map[patch_num]);
+                                printf("ld assert\n");
+                                exit(-1);
+                            }
 
-                                //ld = (f_al1 * f_al2) - f_both;
-                                //sum += abs(ld);
-                                //ct++;
-
-                                // r2 ld
-                                ld = this->calc_ld(f_both, f_al1, f_al2);
-                                ct++;
-                                sum += ld;
-                                //log_linkage(patch_num, l1, al1->allele_val, l2, al2->allele_val, ld, type);
-
+                            // r2 ld
+                            ld = this->calc_ld(f_both, f_al1, f_al2);
+                            ct++;
+                            sum += ld;
                         }
 
                 }
