@@ -33,8 +33,6 @@ void read_params_file(){
         std::string name = record[0];
         double val = atof(record[1].c_str());
 
-        std::cout << "name: " << name << " val: " << val << "\n";
-
         params.insert(std::pair<std::string, double>(name, val));
     }
 }
@@ -76,14 +74,11 @@ void initialize_patches(){
 
     for (int i = 0; i < n_patches; i++){
         k_vals[i] = k_vals[i]/k_sum;
-        printf("k_val: %f\n", k_vals[i]);
     }
-    printf("\n");
     for (int i = 0; i < n_patches; i++){
         double k = double(n_indiv)*k_vals[i];
         double x = real_uniform(0, side_len-1, patch_generator);
         double y = real_uniform(0, side_len-1, patch_generator);
-        printf("K: %.2f\n", k);
         Patch *tmp = new Patch(x,y,k);
         patches->push_back(tmp);
     }
