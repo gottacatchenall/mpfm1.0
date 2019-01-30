@@ -5,4 +5,4 @@
 *.dSYM/
 data/
 mpfmdata/
-./mpfm
+./bin/mpfm
