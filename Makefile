@@ -6,8 +6,8 @@ EXE = bin/mpfm
 EXE_DEBUG = mpfm_debug
 TEST_EXE = test/run_tests
 
-CC = g++
-CFLAGS = -std=c++11 -Wall -g -march=haswell  $(INC_PARAMS) -O3
+CC = ${CXX}
+CFLAGS = -std=c++11 -Wall $(INC_PARAMS) -O3 -xCORE-AVX2
 
 DEBUG_FLAG = -D __DEBUG__
 
