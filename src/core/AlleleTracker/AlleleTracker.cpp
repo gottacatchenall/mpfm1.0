@@ -164,7 +164,7 @@ void AlleleTracker::get_global_ld(std::string type){
 }
 
 double AlleleTracker::calc_ld(double p_ab, double p_a, double p_b){
-    double D, Dmax, Dprime, opt1, opt2;
+    double D;
 
     D = p_ab - p_a*p_b;
 
@@ -172,39 +172,10 @@ double AlleleTracker::calc_ld(double p_ab, double p_a, double p_b){
         return 0;
     }
 
-    if (D < 0){
-        opt2 = -1*p_a*p_b;
-        opt1 = -1*(1.0-p_a)*(1.0-p_b);
+    double denom = p_a*(1.0-p_a)*p_b*(1.0-p_b);
+    double d2 = pow(D, 2);
 
-        if (opt2 > opt1) { Dmax = opt2; }
-        else { Dmax = opt1; }
-
-        if (Dmax > 0){
-            return D/Dmax;
-        }
-        else{
-            return 1.0;
-        }
-    }
-
-    else {
-        opt2 = p_a*(1.0-p_b);
-        opt1 = (1.0-p_a)*p_b;
-
-        if (opt2 < opt1) { Dmax = opt2; }
-        else { Dmax = opt1; }
-
-        if (Dmax > 0){
-            return D/Dmax;
-        }
-        else{
-            return 1.0;
-        }
-    }
-
-
-
-
+    return d2/denom;
 }
 
 void AlleleTracker::get_pairwise_ld(int patch1_num, int patch2_num, std::string type){
