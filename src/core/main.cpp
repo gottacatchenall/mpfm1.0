@@ -110,14 +110,16 @@ void selection(){
 void logging(){
     for (Patch* patch_i: *patches){
         if (patch_i->get_size() > 0){
+            int i = patch_i->get_id();
             log_eff_migration(patch_i);
             log_patch(patch_i);
-            /*for (Patch* patch_j: *patches){
-                if (patch_j->get_size()){
+            for (Patch* patch_j: *patches){
+                int j = patch_j->get_id();
+                if (patch_j->get_size() && i != j){
                     //log_attempted_migration(patch_i, patch_j);
-                    //log_successful_migration(patch_i, patch_j);
+                    log_successful_migration(patch_i, patch_j);
                 }
-            }*/
+            }
         }
     }
     //get_fst();

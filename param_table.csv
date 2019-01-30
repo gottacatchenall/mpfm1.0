@@ -1,7 +1,7 @@
 Parameter,Type,Default,Flag,Description
 DATA_DIRECTORY,str,0,-path,
 NUM_PATCHES,int,20,-np,
-N_INDIVIDUALS,int,2000,-nindiv,
+N_INDIVIDUALS,int,5000,-nindiv,
 NUM_GENERATIONS,int,1000,-g,
 BASE_MIGRATION_RATE,double,0.1,-migdist,
 MEAN_LOCUS_WEIGHT,double,0.2,-lw,

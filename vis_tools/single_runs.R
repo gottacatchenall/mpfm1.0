@@ -7,13 +7,14 @@ ggplot(mpg, aes(cty, hwy, color = class)) + geom_density2d()
 library(vegan)
 library(ggplot2)
 patch_data <- read.csv('patches.csv')
+loci <- read.csv('loci.csv')
 #att_migration <- read.csv('attempted_migration.csv')
 #success_migration <- read.csv('successful_migration.csv')
 eff_migration <- read.csv('eff_migration.csv')
 linkage <- read.csv('linkage.csv')
 gbl_linkage <- read.csv('global_linkage.csv')
 alleles <- read.csv('allele_freq.csv')
-f_st <- read.csv('f_st.csv')
+#f_st <- read.csv('f_st.csv')
 #colonization <- read.csv('colonization.csv')
 #extinction <- read.csv('extinction.csv')
 patch_data$patch_num <- factor(patch_data$patch_num)
@@ -33,7 +34,7 @@ run_name <- 'N=20 K=300, H=0.2, dynamic ef,'
 # Mean Fitness
 mean_w_by_gen <- aggregate(mean_w ~ generation*patch_num , data = patch_data, FUN=mean)
 
-ggplot(mean_w_by_gen, aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5)
+ggplot(mean_w_by_gen, aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5) + geom_line()
 #+ guides(col = guide_legend(nrow = 10)) + labs(y='Mean w', title=paste('Mean Fitness -- ',run_name))
 
 # Effective Migration Total
@@ -65,6 +66,11 @@ ggplot(mean_linkage_by_gen, aes(generation, D, color = type, group=type)) + geom
 mean_gbl_linkage_by_gen <- aggregate(D ~ generation*type , data = gbl_linkage, FUN=mean)
 ggplot(mean_gbl_linkage_by_gen, aes(generation, D, color = type, group=type)) + geom_point()+ geom_smooth(span=0.4) + guides(col = guide_legend(nrow = 10))+ labs(y='D', title=paste('Global LD -- ',run_name)) + scale_colour_brewer(palette="Set1")
 #+ geom_vline(aes(xintercept=generation), extinction)
+
+
+ggplot(subset(gbl_linkage, type=="fitness"), aes(generation, D, color = interaction(locus1,locus2), group=interaction(locus1,locus2))) + geom_point()+ geom_line() + guides(col = guide_legend(nrow = 10))+ labs(y='D', title=paste('Global LD -- ',run_name))
+#+ geom_vline(aes(xintercept=generation), extinction)
+
 
 ## F_st
 f_st_by_gen <- aggregate(F_st ~ generation , data = subset(f_st), FUN=mean)
