@@ -194,7 +194,7 @@ def write_demography(run_id, source_dir_path, target_dir_path):
                 if t == "neutral":
                     neut = 1
 
-                write_line = "%d,%d,%f,%f,%f,%f,%f,%f,%f,%d,%d\n" % (run_id, gen, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
+                write_line = "%d,%d,%f,%f,%f,%f,%d,%d,%d\n" % (run_id, gen, gld_mean, gld_sigma, lld_mean, lld_sigma, n_fixed, neut, fit)
 
                 with open(target_file_path, 'a') as file:
                     file.write(write_line)
