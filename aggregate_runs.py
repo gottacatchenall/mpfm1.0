@@ -50,16 +50,7 @@ def init_files(folder):
         file.write(demography_csv_header)
     with open(dyn, 'a') as file:
         file.write(dynamics_csv_header)
-    with open(meta, 'a') as file:
-        file.write('run_id,')
-
-        p = os.path.abspath(folder) + '/' + os.listdir(folder)[0] + '/params.ini'
-        print 'okay'
-        df = pandas.read_csv(p, sep=' ', error_bad_lines=False, header=None)
-        for row in df.itertuples():
-            file.write(str(row[1]) + ',')
-        file.write('\n')
-
+    
 
 metadata = pandas.DataFrame()
 
@@ -74,12 +65,12 @@ def add_metadata(run_id, source_dir_path, target_dir_path):
     df = df.reindex(df.index.drop(0))
     df['run_id'] = run_id
 
-    print df
+    #print df
     if len(metadata) == 0:
         metadata = df
     else:
         metadata = pandas.concat([metadata, df], sort=True)
-    print metadata
+    #print metadata
     #with open(target_file_path, 'w') as f:
         #metadata.to_csv(f, header=True)
 
