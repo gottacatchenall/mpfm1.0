@@ -168,12 +168,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
 
         gld = source_dir_path + '/' + global_ld_path
         lld = source_dir_path + '/' + local_ld_path
-        #fst = source_dir_path + '/' + fst_path
+        fst = source_dir_path + '/' + fst_path
         alf = source_dir_path + '/' + allele_freq_path
 
         global_ld_df = pandas.read_csv(gld)
         local_ld_df = pandas.read_csv(lld)
-        #fst_df = pandas.read_csv(fst)
+        fst_df = pandas.read_csv(fst)
         allele_freq_df =  pandas.read_csv(alf)
 
         gens = allele_freq_df['generation'].unique()
@@ -186,12 +186,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
                 q = 'generation == ' + str(gen) + ' & type == \"' + str(t) + '\"'
 
                 this_gen_alf = allele_freq_df.query(q)
-                #this_gen_fst = fst_df.query(q)
+                this_gen_fst = fst_df.query(q)
                 this_gen_lld = local_ld_df.query(q)
                 this_gen_gld = global_ld_df.query(q)
 
 
-                #fst_mean, fst_sigma = get_fst(this_gen_fst)
+                fst_mean, fst_sigma = get_fst(this_gen_fst)
                 lld_mean, lld_sigma = get_ld(this_gen_lld)
                 gld_mean, gld_sigma = get_ld(this_gen_gld)
                 n_fixed = get_num_fixed(this_gen_alf)
@@ -256,7 +256,7 @@ def main():
             print path
             add_metadata(id_ct, path, folder)
             write_demography(id_ct, path, folder)
-            #write_dynamics(id_ct, path, folder)
+            write_dynamics(id_ct, path, folder)
             id_ct += 1
 
     write_metadata(folder)
