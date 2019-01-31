@@ -32,7 +32,8 @@ def print_info():
 
 
 def create_run_directory(p):
-    path = os.path.abspath('/scratch/summit/mica5688/data' + p)
+    #path = os.path.abspath('./data/' + p)
+    path = os.path.abspath('/scratch/summit/mica5688/data/' + p)
 
     try:
         os.mkdir(path)
@@ -60,21 +61,21 @@ def start_proc(mpfm_path, dir_path):
     exe = (mpfm_path) + ' ' + dir_path
     process = subprocess.run(mpfm_path, stdout=True, stderr=True, shell=True)
 
-def write_exe_name(dir_path, mpfm_path, this_dir):
+def write_exe_name(dir_path, mpfm_path, this_dir, treatment_num):
     os.chdir(this_dir)
 
     exe = mpfm_path + ' ' + dir_path + ';\n'
-
-    with open('lb_cmd_file', 'a') as file:
+    file_name = 'lb_cmd_file_treatment%d' % treatment_num
+    with open(file_name, 'a') as file:
         file.write(exe)
 
 
-def create_batch_run_file(this_dir, params):
+def create_batch_run_file(this_dir, params, treatment_num):
     mpfm_path = os.path.abspath('./bin/mpfm')
     dir_name = params['DATA_DIRECTORY'] or str(time.time())
     dir_path = create_run_directory(dir_name)
     create_ini_file(dir_path, params)
-    write_exe_name(dir_path, mpfm_path, this_dir)
+    write_exe_name(dir_path, mpfm_path, this_dir, treatment_num)
 
 def start_run(params):
     mpfm_path = os.path.abspath('./bin/mpfm')

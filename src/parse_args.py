@@ -56,9 +56,9 @@ def setup_arg_parser(param_table):
         flag = param_table[param]['flag']
         desc = param_table[param]['desc']
 
-        if (type != 'bool'):
+        if (t != 'bool'):
             parser.add_argument(flag, nargs=1, metavar=name, dest=name, type=get_type(t), help=name + ': ' + desc)
         else:
-            parser.add_argument(flag, action='store_true', help =name + ': ' + desc)
+            parser.add_argument(flag, action='store_true', dest=name, help =name + ': ' + desc)
 
     return parser
