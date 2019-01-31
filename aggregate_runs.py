@@ -50,7 +50,7 @@ def init_files(folder):
         file.write(demography_csv_header)
     with open(dyn, 'a') as file:
         file.write(dynamics_csv_header)
-    
+
 
 metadata = pandas.DataFrame()
 
@@ -164,7 +164,7 @@ def write_demography(run_id, source_dir_path, target_dir_path):
 
         global_ld_df = pandas.read_csv(gld)
         local_ld_df = pandas.read_csv(lld)
-        fst_df = pandas.read_csv(fst)
+        #fst_df = pandas.read_csv(fst)
         allele_freq_df =  pandas.read_csv(alf)
 
         gens = allele_freq_df['generation'].unique()
@@ -177,12 +177,12 @@ def write_demography(run_id, source_dir_path, target_dir_path):
                 q = 'generation == ' + str(gen) + ' & type == \"' + str(t) + '\"'
 
                 this_gen_alf = allele_freq_df.query(q)
-                this_gen_fst = fst_df.query(q)
+                #this_gen_fst = fst_df.query(q)
                 this_gen_lld = local_ld_df.query(q)
                 this_gen_gld = global_ld_df.query(q)
 
 
-                fst_mean, fst_sigma = get_fst(this_gen_fst)
+                fst_mean, fst_sigma = 0,0
                 lld_mean, lld_sigma = get_ld(this_gen_lld)
                 gld_mean, gld_sigma = get_ld(this_gen_gld)
                 n_fixed = get_num_fixed(this_gen_alf)
