@@ -1,6 +1,8 @@
 
 {
   library(ggplot2)
+  library(gmodels)
+  library(dplyr)
   demography <- read.csv('demography.csv')
   #dynamics <- read.csv('dynamics.csv')
   metadata <- read.csv('metadata.csv')
@@ -15,8 +17,7 @@
   #data <- merge(demography, dynamics, by=c("run_id","generation"))
   data <- merge(metadata, demography, by="run_id")
 }
-
-ggplot(subset(data, fitness==1), aes(generation, global_ld_mean, group=(run_id), color=(MEAN_LOCUS_WEIGHT))) + geom_point() + geom_line()
+ggplot(subset(data), aes(generation, global_ld_mean, group=(run_id), color=(PATCH_K_MEAN))) + geom_point() + geom_line()
 
 ggplot(subset(data), aes(generation, fst_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
 
@@ -27,14 +28,52 @@ ggplot(data, aes(generation, eff_mig_mean, group=(run_id), color=(INCIDENCE_FUNC
 
 ggplot(subset(data), aes(generation, prop_of_k_mean, group=(run_id), color=(ENV_FACTOR_H_VALUE))) + geom_point() + geom_line()
 
-aggregate_by <- function(arg){
-  d <- subset(data, fitness == 1)
-  col = d[[arg]]
-  agg_data <- do.call(data.frame, aggregate(global_ld_mean ~ generation*col, data = d, FUN = function(x) c(mn = mean(x), sd = sd(x))))
-  agg_data$ymax <- agg_data$global_ld_mean.mn + agg_data$global_ld_mean.sd
-  agg_data$ymin <- agg_data$global_ld_mean.mn - agg_data$global_ld_mean.sd
-  ggplot(agg_data, aes(generation, global_ld_mean.mn, color = col, group = col )) + geom_ribbon(aes(ymin=ymin, ymax=ymax + global_ld_mean.sd)) + geom_line()
+aggregate_by_ld <- function(arg, xlabel="Generation", ylabel="Mean LD", col_name="col_name"){
+    d <- subset(data)
+    col = d[[arg]]
+    agg_data <- do.call(data.frame, aggregate(global_ld_mean ~ generation*col, data = d, FUN = ci))
+    agg_data$ymax <- agg_data$global_ld_mean.CI.upper
+    agg_data$ymin <- agg_data$global_ld_mean.CI.lower 
+    ggplot(agg_data, aes(generation, global_ld_mean.Estimate, color =  as.factor(col), group =  as.factor(col) )) + geom_ribbon(aes(ymin=ymin, ymax=ymax),alpha=0.5) + geom_line() + xlab(xlabel) + ylab(ylabel) + labs(color=col_name)
 }
 
-aggregate_by("PATCH_DECAY")
+aggregate_by_n_fixed <- function(arg, xlabel="Generation", ylabel="Number of Loci Fixed", col_name="col_name"){
+  d <- subset(data)
+  col = d[[arg]]
+  agg_data <- do.call(data.frame, aggregate(n_loci_fixed ~ generation*col, data = d, FUN = ci))
+    agg_data$ymax <- agg_data$n_loci_fixed.CI.upper
+    agg_data$ymin <- agg_data$n_loci_fixed.CI.lower
+    ggplot(agg_data, aes(generation, n_loci_fixed.Estimate, color =  as.factor(col), group = as.factor(col) )) + geom_ribbon(aes(ymin=ymin, ymax=ymax), alpha=0.5) + geom_line() + xlab(xlabel) + ylab(ylabel) + labs(color=col_name)
+}
+
+
+
+mult <- c("INCIDENCE_FUNCTION_DECAY", "NUM_PATCHES")
+plot_df <-data %>% group_by(NUM_PATCHES) %>%
+  do(
+    plots = ggplot(data = .) + aes(x = generation, y = get_ld_mean, group=run_id) +
+      geom_point() + ggtitle(.$NUM_PATCHES)
+  )
+
+
+aggregate_by_n_fixed("N_INDIVIDUALS", col_name="Total K")
+aggregate_by_ld("N_INDIVIDUALS", col_name="Total K")
+
+
+aggregate_by_n_fixed("NUM_PATCHES", col_name = "Number of Patches")
+aggregate_by_ld("NUM_PATCHES", col_name = "Number of Patches")
+
+aggregate_by_n_fixed("INCIDENCE_FUNCTION_DECAY", col_name = "Dist. Decay Strength")
+aggregate_by_ld("INCIDENCE_FUNCTION_DECAY", col_name = "Dist. Decay Strength")
+
+
+
+
+# 2deme
+aggregate_by_ld("PATCH_K_MEAN", col_name = "Dist. Decay Strength")
+
+
+aggregate_by_ld("MEAN_LOCUS_WEIGHT", col_name = "Dist. Decay Strength")
+
+
 

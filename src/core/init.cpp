@@ -185,21 +185,16 @@ int expected_num_alleles(){
 std::vector<std::vector<double>> generate_allele_freq_from_beta(std::vector<std::vector<double>> alleles){
     int n_loci = params["NUM_OF_LOCI"];
 
-
     std::vector<std::vector<double>> props;
 
     for (int l = 0; l < n_loci; l++){
         props.push_back(std::vector<double>());
         int n_alleles = alleles[l].size();
-        double rem = 1.0;
-        double p, prop;
-        for (int i = 0; i < n_alleles - 1; i++){
-            p = beta_dist(0.6, 1.7, main_generator);
-            prop = rem * p;
-            rem -= prop;
-            props[l].push_back(prop);
+
+        double prop_each = 1.0/double(n_alleles);
+        for (int i = 0; i < n_alleles; i++){
+            props[l].push_back(prop_each);
         }
-        props[l].push_back(rem);
     }
 
     return props;
