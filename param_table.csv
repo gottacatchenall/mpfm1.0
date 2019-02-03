@@ -2,7 +2,7 @@ Parameter,Type,Default,Flag,Description
 DATA_DIRECTORY,str,0,-path,
 NUM_PATCHES,int,20,-np,
 N_INDIVIDUALS,int,5000,-nindiv,
-NUM_GENERATIONS,int,1000,-g,
+NUM_GENERATIONS,int,2000,-g,
 BASE_MIGRATION_RATE,double,0.01,-migdist,
 MEAN_LOCUS_WEIGHT,double,0.2,-lw,
 INCIDENCE_FUNCTION_DECAY,double,2.0,-distdecay,
