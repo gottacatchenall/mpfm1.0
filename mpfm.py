@@ -15,11 +15,13 @@ def main():
     print_info()
 
     if (args['BATCH']):
-        area_decay_space = [1.0, 2.0, 3.0]
-        dist_decay_space = [1.0, 2.0, 3.0]
+        area_decay_space = [0.1, 0.5, 2.0]
+        dist_decay_space = [0.5, 1.0, 2.0]
         total_indiv_space = [4000, 6000, 8000]
-
         n_patches_space = [5, 10, 25]
+        ef_space = [0.2, 0.5, 0.8]
+        lw_space = [0.05, 0.2, 0.4]
+
         n_rep = 30
 
         n_threads = n_rep * len(n_patches_space) * len(total_indiv_space) * len(dist_decay_space) * len(area_decay_space)
@@ -35,34 +37,36 @@ def main():
             for dist_decay in dist_decay_space:
                 for n_patches in n_patches_space:
                     for n_indiv in total_indiv_space:
+                        for ef_h in ef_space:
+                            for lw in lw_space:
+                                treatment_ct += 1
+                                path = 'treatment%d' % (treatment_ct)
 
-                        treatment_ct += 1
-                        path = 'K%d_NP%d_AD%.2f_DE%.2f_rep' % (n_indiv, n_patches, area, dist_decay)
-
-                        for rep in range(n_rep):
-                            os.chdir(this_dir)
-                            params = {}
-                            for param in param_table:
-                                params[param] = param_table[param]['default']
-
-
-                            params["BASE_MIGRATION_RATE"] = 0.05
-                            params["MEAN_LOCUS_WEIGHT"] = 0.2
-
-                            params["PATCH_DECAY"] = area
-                            params["N_INDIVIDUALS"] = n_indiv
-                            params["INCIDENCE_FUNCTION_DECAY"] = dist_decay
-                            params["NUM_PATCHES"] = n_patches
-
-                            params["DATA_DIRECTORY"] = path + str(rep)
-                            params["RANDOM_SEED"] = np.random.randint(0, 100000000)
-                            params["EF_RANDOM_SEED"] = np.random.randint(0, 100000000)
-                            params["PATCH_RANDOM_SEED"] = np.random.randint(0, 100000000)
-                            params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                                for rep in range(n_rep):
+                                    os.chdir(this_dir)
+                                    params = {}
+                                    for param in param_table:
+                                        params[param] = param_table[param]['default']
 
 
-                            # Each treatment goes into unique lb_cmd_file
-                            create_batch_run_file(this_dir, params, treatment_ct)
+                                    params["BASE_MIGRATION_RATE"] = 0.05
+
+                                    params["MEAN_LOCUS_WEIGHT"] = lw
+                                    params["PATCH_DECAY"] = area
+                                    params["N_INDIVIDUALS"] = n_indiv
+                                    params["INCIDENCE_FUNCTION_DECAY"] = dist_decay
+                                    params["NUM_PATCHES"] = n_patches
+                                    params["ENV_FACTOR_H_VALUE"] = ef_h
+
+                                    params["DATA_DIRECTORY"] = path + str(rep)
+                                    params["RANDOM_SEED"] = np.random.randint(0, 100000000)
+                                    params["EF_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                                    params["PATCH_RANDOM_SEED"] = np.random.randint(0, 100000000)
+                                    params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
+
+
+                                    # Each treatment goes into unique lb_cmd_file
+                                    create_batch_run_file(this_dir, params, treatment_ct)
 
     else:
         params = {}
