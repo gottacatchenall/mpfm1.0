@@ -219,20 +219,20 @@ void census(){
     al_tracker.construct_allele_table();
     for (Patch* patch_i: *patches){
         int p1 = patch_i->get_id();
-        al_tracker.get_ld(p1, "fitness");
-        al_tracker.get_ld(p1, "neutral");
+        al_tracker.get_ld(p1, "");
+        al_tracker.get_ld(p1, "");
 
         for (Patch* patch_j: *patches){
             int p2 = patch_j->get_id();
             if (p1 > p2){
-                al_tracker.get_pairwise_ld(p1, p2, "fitness");
-                al_tracker.get_pairwise_ld(p1, p2, "neutral");
+                al_tracker.get_pairwise_ld(p1, p2, "");
+                al_tracker.get_pairwise_ld(p1, p2, "");
             }
         }
 
     }
-    al_tracker.get_global_ld("fitness");
-    al_tracker.get_global_ld("neutral");
+    al_tracker.get_global_ld("");
+    al_tracker.get_global_ld("");
 }
 
 void shift_environment(){

@@ -9,19 +9,9 @@ AlleleTracker::AlleleTracker(){
     allele_map = new std::vector<allele*>[n_loci];
 }
 
-
-void AlleleTracker::get_ld(int patch_num, std::string type){
-    std::vector<allele*> alleles;
-
-    double f_al1, f_al2, f_both, ld;
-
-    Patch* p = (*patches)[patch_num];
-    int n_total = p->get_size();
-
+std::vector<int> AlleleTracker::get_loci(std::string type){
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
-
-
     std::vector<int> loci;
     if (type == "fitness"){
         for (int i = 0; i < n_ef; i++){
@@ -36,10 +26,29 @@ void AlleleTracker::get_ld(int patch_num, std::string type){
         }
     }
 
+    else {
+        int nl = params["NUM_OF_LOCI"];
+        for (int i = 0; i < nl; i++){
+            loci.push_back(i);
+        }
+    }
     std::sort(loci.begin(), loci.end());
+    return loci;
+}
+
+void AlleleTracker::get_ld(int patch_num, std::string type){
+    std::vector<allele*> alleles;
+
+    double f_al1, f_al2, f_both, ld;
+
+    Patch* p = (*patches)[patch_num];
+    int n_total = p->get_size();
+
+    int n_ef = params["NUM_ENV_FACTORS"];
+    int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
 
 
-
+    std::vector<int> loci = this->get_loci(type);
     int n_loci = loci.size();
 
     if (n_total > 0){
@@ -95,24 +104,10 @@ void AlleleTracker::get_global_ld(std::string type){
     int n_ef = params["NUM_ENV_FACTORS"];
     int n_loci_per_ef = params["NUM_LOCI_PER_EF"];
 
-    std::vector<int> loci;
-    if (type == "fitness"){
-        for (int i = 0; i < n_ef; i++){
-            for (int j = 0; j < n_loci_per_ef; j++){
-                loci.push_back(genome_dict->fitness_loci[i][j]);
-            }
-        }
-    }
-    else if (type == "neutral"){
-        for (int l : genome_dict->neutral_loci){
-            loci.push_back(l);
-        }
-    }
-
+    std::vector<int> loci = this->get_loci(type);
     int n_loci = loci.size();
-    int n_total = get_total_population_size();
-    std::sort(loci.begin(), loci.end());
 
+    int n_total = get_total_population_size();
     std::vector<allele*> alleles;
 
     for (int l1 = 0; l1 < n_loci; l1++){
@@ -185,22 +180,8 @@ void AlleleTracker::get_pairwise_ld(int patch1_num, int patch2_num, std::string 
     int n2 = p2->get_size();
 
 
-    std::vector<int> loci;
-    if (type == "fitness"){
-        for (int i = 0; i < n_ef; i++){
-            for (int j = 0; j < n_loci_per_ef; j++){
-                loci.push_back(genome_dict->fitness_loci[i][j]);
-            }
-        }
-    }
-    else if (type == "neutral"){
-        for (int l : genome_dict->neutral_loci){
-            loci.push_back(l);
-        }
-    }
-
+    std::vector<int> loci = this->get_loci(type);
     int n_loci = loci.size();
-    std::sort(loci.begin(), loci.end());
 
     std::vector<allele*> alleles;
 
