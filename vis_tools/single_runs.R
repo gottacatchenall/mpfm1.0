@@ -34,7 +34,7 @@ run_name <- 'N=20 K=300, H=0.2, dynamic ef,'
 # Mean Fitness
 mean_w_by_gen <- aggregate(mean_w ~ generation*patch_num , data = patch_data, FUN=mean)
 
-ggplot(mean_w_by_gen, aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5) + geom_line()
+ggplot(subset(mean_w_by_gen, mean_w > 0), aes(generation, mean_w, color = patch_num, group=patch_num))  + geom_point(size=0.5) + geom_line() +  theme(legend.position="none")
 #+ guides(col = guide_legend(nrow = 10)) + labs(y='Mean w', title=paste('Mean Fitness -- ',run_name))
 
 # Effective Migration Total
@@ -140,7 +140,7 @@ ggplot(shared_df, aes(gens, shared)) + geom_point() + guides(col = guide_legend(
 ### 
 ### % 18 , 15, 0
 mean_k_by_gen <- aggregate(prop_of_k ~ generation*patch_num, data=patch_data,FUN=mean)
-ggplot(mean_k_by_gen, aes(generation, prop_of_k, color=patch_num, group=patch_num)) + geom_point() + geom_line()+ guides(col = guide_legend(nrow = 10))
+ggplot(mean_k_by_gen, aes(generation, prop_of_k, color=as.factor(patch_num), group=patch_num)) + geom_point() + geom_line()+ guides(col = guide_legend(nrow = 10)) +  theme(legend.position="none")
 
 
 summary(lm(mean_k_by_gen$prop_of_k ~ mean_k_by_gen$generation))
@@ -198,6 +198,14 @@ ggplot(migr_df, aes(generation, prop_new_migrants, color=migration_pair, group=m
 
 
 
-### LD By Patch
-+ geom_density2d()
+### grid
+library(gganimate)
+library(magick)
+ef <- read.csv('env_factors.csv')
+
+ggplot(subset(patch_data, generation == 95), aes(x,y)) + geom_raster(aes(fill = prop_of_k)) + xlim(0,31) + ylim(0,31) + labs(title = 'Year: {frame_time}') 
+
+ggplot(subset(ef), aes(x,y)) + geom_raster(aes(fill = ef0)) + xlim(0,31) + ylim(0,31) + labs(title = 'Year: {frame_time}') 
+
+
 

@@ -32,8 +32,8 @@ def print_info():
 
 
 def create_run_directory(p):
-    #path = os.path.abspath('./data/' + p)
-    path = os.path.abspath('/scratch/summit/mica5688/data/' + p)
+    path = os.path.abspath('./data/' + p)
+    #path = os.path.abspath('/scratch/summit/mica5688/data/' + p)
 
     try:
         os.mkdir(path)

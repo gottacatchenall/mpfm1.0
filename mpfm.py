@@ -64,7 +64,6 @@ def main():
                                     params["PATCH_RANDOM_SEED"] = np.random.randint(0, 100000000)
                                     params["GENOME_RANDOM_SEED"] = np.random.randint(0, 100000000)
 
-
                                     # Each treatment goes into unique lb_cmd_file
                                     create_batch_run_file(this_dir, params, treatment_ct)
 
