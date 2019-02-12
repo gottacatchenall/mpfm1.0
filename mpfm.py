@@ -40,7 +40,7 @@ def main():
                         for ef_h in ef_space:
                             for lw in lw_space:
                                 treatment_ct += 1
-                                path = 'treatment%d' % (treatment_ct)
+                                path = 'treatment%d_rep' % (treatment_ct)
 
                                 for rep in range(n_rep):
                                     os.chdir(this_dir)
