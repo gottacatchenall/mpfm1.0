@@ -34,7 +34,7 @@ def main():
 
         for dist_decay in dist_decay_space:
             for n_patches in n_patches_space:
-                for n_ef in num_ef_space:
+                for n_ef in n_ef_space:
                     for ef_h in ef_space:
                         for lw in lw_space:
                             treatment_ct += 1
