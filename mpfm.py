@@ -23,7 +23,7 @@ def main():
 
         n_rep = 30
 
-        n_threads = n_rep * len(n_patches_space) * len(total_indiv_space) * len(dist_decay_space) * len(area_decay_space)
+        n_threads = n_rep * len(n_patches_space) * len(n_ef_space) * len(dist_decay_space) * len(ef_space) * len(lw_space)
 
         print('Num of Procs: %d' % n_threads)
         #pool = ThreadPool(n_threads)
