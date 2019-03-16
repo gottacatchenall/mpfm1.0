@@ -32,6 +32,8 @@ void log_patch(Patch* patch_i){
         file << "," << std::to_string(val);
     }
     file << "\n";
+
+    file.flush();
 }
 
 
@@ -70,6 +72,7 @@ void log_fst(int locus, double fst, std::string type){
         file << "generation,locus,type,F_st\n";
     }
     file << generation << "," << locus << "," << type << "," << fst << "\n";
+    file.flush();
 }
 
 
@@ -87,6 +90,7 @@ void log_attempted_migration(Patch* from, Patch* to){
     if (n_indiv > 0){
         file << from->get_id() << "," << to->get_id() << "," << generation << "," << n_indiv << "," << em << "," << im << "\n";
     }
+    file.flush();
 }
 
 
@@ -102,6 +106,7 @@ void log_successful_migration(Patch* from, Patch* to){
     if (im > 0.0){
         file << from->get_id() << "," << to->get_id() << "," << generation << "," << im <<  "\n";
     }
+    file.flush();
 }
 
 void log_eff_migration(Patch* patch_i){
@@ -113,6 +118,7 @@ void log_eff_migration(Patch* patch_i){
     }
 
     file << patch_i->get_id() << "," << generation << "," << double(migration_tracker->get_eff_migration(patch_i)) << "\n";
+    file.flush();
  }
 
 
@@ -128,7 +134,7 @@ void log_population(Patch* patch_i){
     int n = patch_i->get_size();
 
     file << patch_i->get_id() << "," << generation << ","  << n << "," << double(n)/double(patch_i->get_K()) << "\n";
-
+    file.flush();
 }
 
 void log_linkage(int patch_num, int l1, int l2, double D, std::string type){
@@ -141,6 +147,7 @@ void log_linkage(int patch_num, int l1, int l2, double D, std::string type){
     }
 
     file  << patch_num << "," << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
+    file.flush();
 }
 
 void log_global_linkage(int l1, int l2, double D, std::string type){
@@ -153,6 +160,7 @@ void log_global_linkage(int l1, int l2, double D, std::string type){
     }
 
     file << generation << "," << l1 << "," << l2 << "," << D << "," << type <<  "\n";
+    file.flush();
 }
 
 void log_pairwise_linkage(int patch_i, int patch_j, double D, std::string type){
@@ -165,6 +173,7 @@ void log_pairwise_linkage(int patch_i, int patch_j, double D, std::string type){
     }
 
     file << generation << "," << patch_i << "," << patch_j << "," << D << "," << type <<  "\n";
+    file.flush();
 }
 
 
@@ -177,6 +186,7 @@ void log_allele_freq(int patch_num, int locus, double allele_val, double freq, s
     }
 
     file << patch_num << "," << generation << "," << locus << "," << allele_val << "," << freq << "," << type << "\n";
+    file.flush();
 }
 
 void log_locus(int l, int ef, double strength, std::string type){
@@ -189,6 +199,7 @@ void log_locus(int l, int ef, double strength, std::string type){
     }
 
     file << l << "," << ef << "," << strength <<  "," << type << "\n";
+    file.flush();
 }
 
 void log_colonization(int patch_num){
@@ -200,6 +211,7 @@ void log_colonization(int patch_num){
         file << "generation,patch_num\n";
     }
     file << generation << "," << patch_num << "\n";
+    file.flush();
 }
 void log_extinction(int patch_num){
     std::string ext_file = "extinction.csv";
@@ -211,6 +223,7 @@ void log_extinction(int patch_num){
     }
 
     file << generation << "," << patch_num << "\n";
+    file.flush();
 }
 
 void log_env_factors(int x, int y){
@@ -239,6 +252,7 @@ void log_env_factors(int x, int y){
     }
 
     file << "\n";
+    file.flush();
 }
 
 bool is_file_empty(std::string path){
