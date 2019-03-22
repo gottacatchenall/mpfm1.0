@@ -6,7 +6,27 @@
 
 AlleleTracker::AlleleTracker(){
     int n_loci = params["NUM_OF_LOCI"];
-    allele_map = new std::vector<allele*>[n_loci];
+    //allele_map = std::vector<std::vector<allele*>>;
+
+    for (int i = 0; i < n_loci; i++){
+        allele_map.push_back(std::vector<allele*>());
+    }
+}
+
+AlleleTracker::~AlleleTracker(){
+    int n_loci = params["NUM_OF_LOCI"];
+
+    for (int l = 0; l < n_loci; l++){
+        for (allele* al : (this->allele_map[l])){
+            std::vector<std::vector<dependent_allele*>> dep_al = al->loci;
+            for (dependent_allele* d_al : dep_al[l]){
+                delete d_al;
+            }
+            delete al;
+        }
+    }
+
+    //delete allele_map;
 }
 
 std::vector<int> AlleleTracker::get_loci(std::string type){

@@ -5,6 +5,8 @@
 #include "MigrationTracker.h"
 #include "EnvFactor.h"
 #include "GenomeDict.h"
+//#include <malloc.h>
+
 
 int generation;
 MigrationTracker* migration_tracker;
@@ -215,24 +217,23 @@ void check_dispersal(){
 }
 
 void census(){
-    AlleleTracker al_tracker;
-    al_tracker.construct_allele_table();
+    AlleleTracker* al_tracker = new AlleleTracker;
+    al_tracker->construct_allele_table();
     for (Patch* patch_i: *patches){
         int p1 = patch_i->get_id();
-        al_tracker.get_ld(p1, "");
-        al_tracker.get_ld(p1, "");
+        al_tracker->get_ld(p1, "");
 
         for (Patch* patch_j: *patches){
             int p2 = patch_j->get_id();
             if (p1 > p2){
-                al_tracker.get_pairwise_ld(p1, p2, "");
-                al_tracker.get_pairwise_ld(p1, p2, "");
+                //al_tracker.get_pairwise_ld(p1, p2, "");
             }
         }
 
     }
-    al_tracker.get_global_ld("");
-    al_tracker.get_global_ld("");
+    al_tracker->get_global_ld("");
+
+    delete al_tracker;
 }
 
 void shift_environment(){

@@ -22,21 +22,25 @@ typedef struct allele{
         allele_val = val;
         n_total = 0;
 
-        loci = new std::vector<dependent_allele*>[n_loci];
+        for (int i = 0; i < n_loci; i++){
+            loci.push_back(std::vector<dependent_allele*>());
+        }
     };
+
 
     int locus;
     double allele_val;
     int n_total;
     std::unordered_map<int,int> freq_map;
-    std::vector<dependent_allele*>* loci;
+    std::vector<std::vector<dependent_allele*>> loci;
 } allele;
 
 class AlleleTracker{
     private:
-        std::vector<allele*>* allele_map;
+        std::vector<std::vector<allele*>> allele_map;
     public:
         AlleleTracker();
+        ~AlleleTracker();
         void construct_allele_table();
         void get_ld(int patch_num, std::string type);
         void get_pairwise_ld(int patch1_num, int patch2_num, std::string type);
