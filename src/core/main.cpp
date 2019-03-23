@@ -226,7 +226,7 @@ void census(){
         for (Patch* patch_j: *patches){
             int p2 = patch_j->get_id();
             if (p1 > p2){
-                //al_tracker.get_pairwise_ld(p1, p2, "");
+                al_tracker->get_pairwise_ld(p1, p2, "");
             }
         }
 

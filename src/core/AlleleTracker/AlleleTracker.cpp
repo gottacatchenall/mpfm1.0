@@ -18,14 +18,15 @@ AlleleTracker::~AlleleTracker(){
 
     for (int l = 0; l < n_loci; l++){
         for (allele* al : (this->allele_map[l])){
-            std::vector<std::vector<dependent_allele*>> dep_al = al->loci;
-            for (dependent_allele* d_al : dep_al[l]){
-                delete d_al;
+            std::vector<std::vector<dependent_allele*>> dep_als = al->loci;
+            for (int l2 = 0; l2 < n_loci; l2++){
+                for (dependent_allele* d_al : dep_als[l2]){
+                    delete d_al;
+                }
             }
             delete al;
         }
     }
-
     //delete allele_map;
 }
 
@@ -282,8 +283,7 @@ void AlleleTracker::construct_allele_table(){
                 al1_2 = find_allele(l1, indiv->get_locus(l1, 1));
                 for (int l2 = l1; l2 < n_loci; l2++){
                     this->add_dependent_allele(al1_1, l2, indiv->get_locus(l2, 0), patch_id);
-                    //this->add_dependent_allele(al1_1, l2, indiv->get_locus(l2, 1), patch_id);
-                    //this->add_dependent_allele(al1_2, l2, indiv->get_locus(l2, 0), patch_id);
+
                     this->add_dependent_allele(al1_2, l2, indiv->get_locus(l2, 1), patch_id);
                 }
             }
